@@ -1,0 +1,447 @@
+EF_comp.csv
+File Description: 
+This file refers to private houses (one- and two-apartment houses) that have increased their energy efficiency with public funding in Latvia. The second csv file is not related to this file - they are other private houses that have chosen to install solar panels with public funding (instead of increasing energy efficiency).
+
+High-Level Column Descriptions: 
+Columns A-B: Basic information about the project.
+Columns C-F: Location of the house.
+Columns G-O: Technical information about the house.
+Columns P-S: Home initial assessment.
+Columns T-W: Energy efficiency measures implemented during the project.
+Columns X-CE: Information about the house from the energy audit of the building.
+Detailed Column Descriptions: 
+Column A: Project number
+•	Description: Each house, that received public funding, is assigned a project number. The project number allows you to quickly get information about the project in the system where it was submitted.
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column B: The data
+•	Description: The date when the project application was submitted and its implementation started.
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column C: Region
+•	Description: The planning region where the house is located. There are five planning regions in Latvia - Kurzeme, Latgale, Riga, Vidzeme and Zemgale planning region.
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column D: The town, village
+•	Description: The town, village where the house is located.
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column E: Home address
+•	Description: Home address - street, number or house name, apartment number.
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column F: County/City
+•	Description: The county or city where the house is located.
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column G: County/City
+•	Description: Initial year of exploitation of the building.
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column H: Building Total Area
+•	Description: Total area of the building. It is determined by summing up the entire room, including the basement floor, plinth floor, technical floor, attic floor, if the height of the relevant part of the interior space from the floor to the lower surface of the structure is at least 1.6 meters.
+•	Unit: [m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column I: Room volume
+•	Description: Each building has a certain volume of rooms.
+•	Unit: [m^3]
+•	Data type: real
+•	Semantics of the values: -
+Column J: Average floor height
+•	Description: In the house, the rooms can be of different heights, thus the average floor height is determined.
+•	Unit: [m]
+•	Data type: real
+•	Semantics of the values: -
+Column K: Reference area
+•	Description: Reference floor area according to standard LVS EN ISO 52000-1:2020 9.4.3. point.
+•	Unit: [m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column L: Above-ground floors
+•	Description: Number of above-ground floors. 
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: 
+o	1: one floor
+o	2: two floors
+o	3: three floors
+Column M: Underground floor
+•	Description: Information on whether the house has an underground floor.
+•	Unit: -
+•	Data type: boolean
+•	Semantics of the values:
+o	0: there is no underground floor
+o	1: there is underground floor
+Column N: Mansard
+•	Description: Information on whether the house has an mansard - a roof which has four sloping sides, each of which becomes steeper halfway down. It is a floor built between the roof enclosing structures, external walls and the cover of the upper floor (rooms with interior decoration).
+•	Unit: -
+•	Data type: boolean
+•	Semantics of the values: 
+o	0: there is no mansard
+o	1: there is mansard
+Column O: Roof floor
+•	Description: Information on whether the house has a roof floor - rooms and auxiliary rooms built at the level of the flat roof, which have an exit to the roof terrace or a walkable roof.
+•	Unit: -
+•	Data type: boolean
+•	Semantics of the values: 
+o	0: there is no roof floor
+o	1: there is roof floor
+Column P: Initial energy class
+•	Description: The initial energy efficiency class of the house ranges from A+ to F class. Each house has one class, which is determined in accordance with the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436) 
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column Q: Energy consumption before
+•	Description: Total energy consumption before the project.
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values:
+Column R: Heat energy consumption before
+•	Description: Heat energy consumption before the project.
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column S: Carbon dioxide emissions before
+•	Description: Carbon dioxide emissions amount before the project.
+•	Unit: [kg CO2/m2 per year]
+•	Data type: real
+•	Semantics of the values: -
+Column T: Carrying out construction works
+•	Description: Carrying out construction works in the enclosing structures during the project (to increase the energy efficiency of the house)
+•	Unit: -
+•	Data type: boolean
+•	Semantics of the values: 
+o	0: no construction work in enclosing structures
+o	1: construction works have been carried out in enclosing structures
+Column U: Reconstruction of engineering systems
+•	Description: Reconstruction of engineering systems (ventilation, recuperation) to increase the energy efficiency of the house (during the project).
+•	Unit: -
+•	Data type: boolean
+•	Semantics of the values: 
+o	0: engineering systems have not been restored
+o	1: restoration of engineering systems has been carried out
+Column V: Water heating system
+•	Description: Installation of a new water heating system (during the project).
+•	Unit: -
+•	Data type: boolean
+•	Semantics of the values: 
+o	0: no installation
+o	1: installation present
+Column W: Heat installation
+•	Description: Installation of heat installations to ensure the production of heat from renewable energy sources
+•	Unit: -
+•	Data type: boolean
+•	Semantics of the values: 
+o	0: no installation
+o	1: installation present
+Column X: Energy audit number
+•	Description: After increasing energy efficiency in the house, an energy audit must be developed. The energy audit is prepared by an independent expert in accordance with the Cabinet of Ministers' regulations of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436). Each energy audit has its own identification number, and it is published in the Construction Information System (https://bis.gov.lv/bisp/lv/epc_documents).
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column Y: Energy class after
+•	Description: Energy efficiency class according to energy audit (after the renovation of the building). Energy efficiency class of the house ranges from A+ to F class. Each house has one class, which is determined in accordance with the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436) 
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column Z: Heat energy consumption after
+•	Description: Heat energy consumption after the project.
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column AA: Consumption for hot water after
+•	Description: Energy consumption for hot water after project implementation.
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column AB: Consumption for mechanical ventilation after
+•	Description: Energy consumption for mechanical ventilation after project implementation.
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column AC: Consumption for lighting after
+•	Description: Energy consumption for lighting after project implementation.
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column AD: Consumption for cooling after
+•	Description: Energy consumption for cooling after project implementation.
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column AE: Energy consumption after
+•	Description: Total energy consumption after the project.
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column AF: Heat saving for heating
+•	Description: Heat energy savings for heating - heat energy consumption before the project minus heat energy consumption after the project.
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column AG: Total energy consumption saving
+•	Description: Total energy consumption saving - total energy consumption before the project minus total energy consumption after the project.
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column AH: Saving of heat energy 
+•	Description: Saving of heat energy consumption.
+•	Unit: %
+•	Data type: integer
+•	Semantics of the values: -
+Column AI: Primary non-renewable energy
+•	Description: Consumption of primary non-renewable energy - calculated according to regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column AJ: Primary total energy consumption
+•	Description: Consumption of primary non-renewable energy - calculated according to regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: [kWh/m^2]
+•	Data type: real
+•	Semantics of the values: -
+Column AK: Almost zero energy building
+•	Description: Compliance of the building with the requirements of an almost zero energy building. The requirements for an almost zero energy building are determined by the Cabinet of Ministers Regulation of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and regulations for energy certification of buildings" in Chapter III (https://likumi.lv/ta/id/322436)
+•	Unit: -
+•	Data type: boolean
+•	Semantics of the values: 
+o	0: it is not an almost zero energy building
+o	1: it is an almost zero energy building
+Column AL: Carbon dioxide emission tons after
+•	Description: Carbon dioxide emissions amount after the project.
+•	Unit: [tons CO2 per year]
+•	Data type: real
+•	Semantics of the values: -
+Column AM: Carbon dioxide emissions after
+•	Description: Carbon dioxide emissions amount after the project.
+•	Unit: [kg CO2/m2 per year]
+•	Data type: real
+•	Semantics of the values: -
+Column AN: Area of the external surface
+•	Description: Area of the external surface of the building after the project. 
+•	Unit: [m2]
+•	Data type: real
+•	Semantics of the values: -
+Column AO: Average heat transfer coefficient
+•	Description: Weighted average coefficient of thermal transmittance of external enclosures. The heat transfer coefficient is the main parameter used to determine the thermal insulation of the building, it is the heat flow in watts [W] through the square meter of the structure.
+•	Unit: [W/m2K]
+•	Data type: real
+•	Semantics of the values: -
+Column AP: Average standard heat transfer coefficient
+•	Description: The average weighted standard (maximum) heat transfer coefficient of the external enclosures.
+•	Unit: [W/m2K]
+•	Data type: real
+•	Semantics of the values: -
+Column AQ: Building calculated heat loss coefficient
+•	Description: The calculated specific heat loss coefficient of the building envelope HT/A.
+•	Unit: [W/m2K]
+•	Data type: real
+•	Semantics of the values: -
+Column AR: Building allowable heat loss coefficient
+•	Description: The permissible specific heat loss coefficient HT max/A of the building envelope is calculated.
+•	Unit: [W/m2K]
+•	Data type: real
+•	Semantics of the values: -
+Column AS: Indoor temperature heating
+•	Description: Calculates indoor temperature for heating assessment.
+•	Unit: [oC]
+•	Data type: integer
+•	Semantics of the values: -
+Column AT: Indoor temperature for cooling
+•	Description: Indoor temperature for cooling evaluation.
+•	Unit: [oC]
+•	Data type: integer
+•	Semantics of the values: -
+Column AU: Air exchange rate
+•	Description: Required air exchange rate.
+•	Unit: [n-1]
+•	Data type: integer
+•	Semantics of the values: -
+Column AV: Ventilation heat loss coefficient
+•	Description: Specific heat loss coefficient of building ventilation.
+•	Unit: [W/m2K]
+•	Data type: real
+•	Semantics of the values: -
+Column AW: Energy resource for heating 1
+•	Description: Several energy sources can be used for heating in one house. The first energy resource used is listed here.
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column AX: Energy resource for heating 2
+•	Description: Several energy sources can be used for heating in one house. The second energy resource used is listed here (if there is one).
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column AY: Energy resource for hot water 1
+•	Description: Energy resource for hot water preparation. Several energy sources can be used for preparation of hot water in one house. The first energy resource used is listed here.
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column AZ: Energy resource for hot water 2
+•	Description: Energy resource for hot water preparation. Several energy sources can be used for preparation of hot water in one house. The second energy resource used is listed here (if there is one).
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column BA: Energy resource for ventilation
+•	Description: Energy resource for ventilation (if there is one).
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column BB: Energy resource for cooling 1
+•	Description: Several energy sources can be used for cooling in one house. The first energy resource used is listed here (if there is one). There may be homes that do not have a solution designed to provide cooling.
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column BC: Energy resource for cooling 2
+•	Description: Several energy sources can be used for cooling in one house. The second energy resource used is listed here (if there is one). There may be homes that do not have a solution designed to provide cooling.
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Column BD: CO2 emission factor for heating 1
+•	Description: CO2 emission factor for heating (for the first energy resource for heating).
+•	Unit: [kg CO2/MWh]
+•	Data type: real
+•	Semantics of the values:
+Column BE: CO2 emission factor for heating 2
+•	Description: CO2 emission factor for heating (for the second energy resource for heating).
+•	Unit: [kg CO2/MWh]
+•	Data type: real
+•	Semantics of the values: -
+Column BF: CO2 emission factor for hot water 1
+•	Description: CO2 emission factor for hot water production (for the first energy resource).
+•	Unit: [kg CO2/MWh]
+•	Data type: real
+•	Semantics of the values: -
+Column BG: CO2 emission factor for hot water 2
+•	Description: CO2 emission factor for hot water production (for the second energy resource).
+•	Unit: [kg CO2/MWh]
+•	Data type: real
+•	Semantics of the values: -
+Column BH: CO2 emission factor for ventilation
+•	Description: CO2 emission factor for ventilation.
+•	Unit: [kg CO2/MWh]
+•	Data type: real
+•	Semantics of the values: -
+Column BI: CO2 emission factor for cooling 1
+•	Description: CO2 emission factor for cooling (for the first energy resource).
+•	Unit: [kg CO2/MWh]
+•	Data type: real
+•	Semantics of the values: -
+Column BJ: CO2 emission factor for cooling 2
+•	Description: CO2 emission factor for cooling (for the second energy resource).
+•	Unit: [kg CO2/MWh]
+•	Data type: real
+•	Semantics of the values: -
+Column BK: Non-renewable factor for heating 1
+•	Description: Primary energy factor for the part of non-renewable energy resources - for heating (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BL: Non-renewable factor for heating 2
+•	Description: Primary energy factor for the part of non-renewable energy resources - for heating (for the second energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BM: Non-renewable factor for water 1
+•	Description: Primary energy factor for the part of non-renewable energy resources - hot water preparation (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BN: Non-renewable factor for water 2
+•	Description: Primary energy factor for the part of non-renewable energy resources - hot water preparation (for the second energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BO: Non-renewable factor for ventilation
+•	Description: Primary energy factor for the part of non-renewable energy resources – ventilation. According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BP: Non-renewable factor for cooling 1
+•	Description: Primary energy factor for the part of non-renewable energy resources - cooling (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BQ: Non-renewable factor for cooling 2
+•	Description: Primary energy factor for the part of non-renewable energy resources - cooling (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BR: Renewable factor for heating 1
+•	Description: Primary energy factor for the part of renewable energy resources - for heating (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BS: Renewable factor for heating 2
+•	Description: Primary energy factor for the part of renewable energy resources - for heating (for the second energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BT: Renewable factor for water 1
+•	Description: Primary energy factor for the part of renewable energy resources - hot water preparation (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BU: Renewable factor for water 2
+•	Description: Primary energy factor for the part of renewable energy resources - hot water preparation (for the second energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BV: Renewable factor for ventilation
+•	Description: Primary energy factor for the part of renewable energy resources – ventilation. According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BW: Renewable factor for cooling 1
+•	Description: Primary energy factor for the part of renewable energy resources - cooling (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BX: Renewable factor for cooling 2
+•	Description: Primary energy factor for the part of renewable energy resources - cooling (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BY: Total factor for heating 1
+•	Description: Total primary energy factor for heating (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column BZ: Total factor for heating 2
+•	Description: Total primary energy factor for heating (for the second energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column CA: Total factor for water 1
+•	Description: Total primary energy factor for hot water preparation (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column CB: Total factor for water 2
+•	Description: Total primary energy factor for hot water preparation (for the second energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column CC: Total factor for ventilation
+•	Description: Total primary energy factor for ventilation. According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column CD: Total factor for cooling 1
+•	Description: Total primary energy factor for cooling (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Column CE: Total factor for cooling 2
+•	Description: Total primary energy factor for cooling (for the first energy resource). According to the regulations of the Cabinet of Ministers of April 8, 2021 No. 222 "Methods for calculating the energy efficiency of buildings and rules for energy certification of buildings" (https://likumi.lv/ta/id/322436).
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+

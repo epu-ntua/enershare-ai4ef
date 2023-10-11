@@ -1,0 +1,70 @@
+Solar_panel_comp.csv
+File Description: 
+This file refers to private houses (one- and two-apartment houses) that have installed solar panels with public funding in Latvia. The second csv file is not related to this file - they are other private houses that have chosen to increase their energy efficiency with public funding.
+
+High-Level Column Descriptions: 
+Columns A-D: Basic information about the project.
+Columns E-G: The initial situation in the house.
+Columns H-L: The situation in the house after the installation of solar panels.
+Detailed Column Descriptions: 
+Columns A: Project number
+•	Description: Each house, that received public funding, is assigned a project number. The project number allows you to quickly get information about the project in the system where it was submitted.
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Columns B: The data
+•	Description: The date when the project application was submitted and its implementation started.
+•	Unit: -
+•	Data type: integer
+•	Semantics of the values: -
+Columns C: Region
+•	Description: The planning region where the house is located. There are five planning regions in Latvia - Kurzeme, Latgale, Riga, Vidzeme and Zemgale planning region.
+•	Unit: -
+•	Data type: text
+•	Semantics of the values: -
+Columns D: Granted support
+•	Description: Granted support after installation of solar panels.
+•	Unit: EUR
+•	Data type: integer
+•	Semantics of the values: -
+Columns E: Electricity consumption of the grid
+•	Description: Electricity consumption from the grid before the project. 
+•	Unit: [MWh per year]
+•	Data type: real
+•	Semantics of the values: -
+Columns F: Primary energy consumption before
+•	Description: Primary energy consumption before the installation of the solar panel system during the project.
+•	Unit: [kW]
+•	Data type: real
+•	Semantics of the values: -
+Columns G: Current inverter set power
+•	Description: Current inverter set power - inverter power that was already installed before the project.
+•	Unit: [kW]
+•	Data type: real
+•	Semantics of the values: -
+Columns H: Inverter power in project
+•	Description: Inverter set power in project - in addition to the existing inverter.
+•	Unit: [kW]
+•	Data type: real
+•	Semantics of the values: -
+Columns I: Electricity produced by solar panels
+•	Description: The amount of electricity produced by the solar panels, which are installed in the project.
+•	Unit: [MWh per year]
+•	Data type: real
+•	Semantics of the values: -
+Columns J: Primary energy consumption after
+•	Description: Primary energy consumption after installing the solar panel system.
+•	Unit: [MWh per year]
+•	Data type: real
+•	Semantics of the values: -
+Columns K: Reduction of primary energy
+•	Description: Reduction of primary energy.
+•	Unit: [MWh per year]
+•	Data type: real
+•	Semantics of the values: -
+Columns L: CO2 emissions reduction
+•	Description: CO2 emissions reduction.
+•	Unit: [t CO2 eq/year]
+•	Data type: real
+•	Semantics of the values: -
+

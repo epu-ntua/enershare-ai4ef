@@ -329,6 +329,13 @@ def calculate_metrics(actual,pred,target_col,scaled_features):
     
     return metrics
 
+def model_predict(test_X,filename='model.ckpt'):
+    model = Regression.load_from_checkpoint(checkpoint_path=filename)
+    test_X_tensor = torch.tensor(test_X[:10].values.astype(np.float32))
+    pred_Y = model(test_X_tensor)
+    print(pred_Y)
+    return
+
 # Remove whitespace from your arguments
 @click.command(
     help= "Given a folder path for CSV files (see load_raw_data), use it to create a model, find\
@@ -349,6 +356,8 @@ def calculate_metrics(actual,pred,target_col,scaled_features):
 @click.option('--uneeded_cols', type=str, default='The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction', help='Dataset columns not necesary for training')
 @click.option('--target_col', type=str, default='Electricity produced by solar panels', help='Target column that we want to predict (model output)')
 @click.option('--categorical_cols', type=str, default='Region', help='columns containing categorical data')
+@click.option('--predict', type=int, default=0, help='predict value or not')
+@click.option('--filename', type=str, default='model.ckpt', help='filename of best model')
 
 def forecasting_model(**kwargs):
     """
@@ -368,7 +377,7 @@ def forecasting_model(**kwargs):
 
     if not os.path.exists("./temp_files/"): os.makedirs("./temp_files/")
     # store mlflow metrics/artifacts on temp file
-    with tempfile.TemporaryDirectory(dir='./temp_files/') as train_tmpdir: 
+    with tempfile.TemporaryDirectory(dir='./temp_files/') as tmpdir: 
 
         # ~~~~~~~~~~~~ Data Collection & process ~~~~~~~~~~~~~~~~~~~~
         print("############################ Reading Data ###############################")
@@ -389,7 +398,6 @@ def forecasting_model(**kwargs):
 
         if(kwargs['preprocess']):
             df, scaler = data_preprocess(df, uneeded_cols, categorical_cols, target_col)
-        # df, scaler = data_preprocess(df)
 
         print("############################ Train Test Spit ###############################")
         
@@ -397,7 +405,12 @@ def forecasting_model(**kwargs):
 
         print(df.info())
 
+        if(kwargs['predict']):
+            model_predict(test_X,kwargs['filename'])
+            return
+        
         print("############################ Setting up network ###############################")
+        
         
         # ~~~~~~~~~~~~~~ Setting up network ~~~~~~~~~~~~~~~~~~~~~~
         torch.set_num_threads(kwargs['num_workers']) #################################
@@ -408,8 +421,8 @@ def forecasting_model(**kwargs):
         model = Regression(**model_args) # double asterisk (dictionary unpacking)
 
         trainer = Trainer(max_epochs=kwargs['max_epochs'], deterministic=True,
-                        profiler=SimpleProfiler(dirpath=f'{train_tmpdir}', filename='profiler_report'), #add simple profiler
-                        logger= CSVLogger(save_dir=train_tmpdir),
+                        profiler=SimpleProfiler(dirpath=f'{tmpdir}', filename='profiler_report'), #add simple profiler
+                        logger= CSVLogger(save_dir=tmpdir),
                         #   accelerator='auto', 
                         #   devices = 1 if torch.cuda.is_available() else 0,
                         auto_select_gpus=True if torch.cuda.is_available() else False,
@@ -425,6 +438,8 @@ def forecasting_model(**kwargs):
         #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Traim/Test/Validate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         trainer.fit(model, train_loader, val_loader)
 
+        trainer.save_checkpoint("model.ckpt")
+        
         pl.utilities.model_summary.ModelSummary(model, max_depth=-1)
         
         # Either best or path to the checkpoint you wish to test. 
@@ -453,9 +468,9 @@ def forecasting_model(**kwargs):
 
         #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Store to Mlflow ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         #store trained model to mlflow with input singature
-        print("\nUploading training csvs and metrics to MLflow server...")
-        logging.info("\nUploading training csvs and metrics to MLflow server...")
-        signature = infer_signature(train_X.head(1), pd.DataFrame(preds))
+        # print("\nUploading training csvs and metrics to MLflow server...")
+        # logging.info("\nUploading training csvs and metrics to MLflow server...")
+        # signature = infer_signature(train_X.head(1), pd.DataFrame(preds))
         # mlflow.pytorch.log_model(model, "model", signature=signature)
         # mlflow.log_params(kwargs)
         # mlflow.log_artifacts(train_tmpdir, "train_results")

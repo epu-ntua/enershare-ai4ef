@@ -30,9 +30,7 @@ from torch.utils.data import TensorDataset, DataLoader
 
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
-from pytorch_lightning.profiler import SimpleProfiler
 from pytorch_lightning.callbacks import EarlyStopping
-from pytorch_lightning.loggers import TensorBoardLogger, CSVLogger
 import logging
 import click
 
@@ -151,8 +149,8 @@ class Regression(pl.LightningModule):
         train_loader = DataLoader(dataset = train_dataset, 
                                   shuffle = True, 
                                   pin_memory=True if torch.cuda.is_available() else False, #for GPU
-                                  num_workers = int(self.hparams.num_workers),
-                                  batch_size = int(self.hparams.batch_size))
+                                  num_workers = self.hparams.num_workers,
+                                  batch_size = self.hparams.batch_size)
         return train_loader
             
     def test_dataloader(self,test_X,test_Y):
@@ -161,8 +159,8 @@ class Regression(pl.LightningModule):
         test_dataset = TensorDataset(feature, target)
         test_loader = DataLoader(dataset = test_dataset, 
                                  pin_memory=True if torch.cuda.is_available() else False, #for GPU
-                                 num_workers = int(self.hparams.num_workers),
-                                 batch_size = int(self.hparams.batch_size))
+                                 num_workers = self.hparams.num_workers,
+                                 batch_size = self.hparams.batch_size)
         return test_loader
 
     def val_dataloader(self,validation_X,validation_Y):
@@ -171,8 +169,8 @@ class Regression(pl.LightningModule):
         val_dataset = TensorDataset(feature, target)
         validation_loader = DataLoader(dataset = val_dataset,
                                        pin_memory=True if torch.cuda.is_available() else False, #for GPU
-                                       num_workers = int(self.hparams.num_workers),
-                                       batch_size = int(self.hparams.batch_size))
+                                       num_workers = self.hparams.num_workers,
+                                       batch_size = self.hparams.batch_size)
         return validation_loader
 
     def predict_dataloader(self):
@@ -234,21 +232,26 @@ class Regression(pl.LightningModule):
     def on_validation_epoch_end(self):
         gc.collect()
 
-def data_preprocess(dframe):
+from sklearn.preprocessing import LabelEncoder
 
-    # Remove date column (not needed)
-    dframe.drop('The data',axis=1,inplace=True)
+def data_preprocess(dframe,uneeded_cols,onehot_fields,target_col):
+        
+    dframe.drop([col for col in uneeded_cols if col != target_col], axis=1, inplace=True)
 
     # remove str prefix of "Project Number" and make each entry an int instead of object
-    # dframe['Project number'] = dframe['Project number'].str.replace('PME2-', '')
-    # dframe['Project number'] = dframe['Project number'].astype(str).astype(np.int64)
+    # dframe.set_index('Project number')
+    dframe['Project number'] = dframe['Project number'].str.replace('PME2-', '')
+    dframe['Project number'] = dframe['Project number'].astype(str).astype(np.int64)
 
-    # Categorical variables: one-hot encoding
-    onehot_fields = ['Region']
+    # Categorical variables: label encoding
     for field in onehot_fields:
-        dummies = pd.get_dummies(dframe[field], prefix=field, drop_first=False)
-        dframe = pd.concat([dframe, dummies], axis=1)
-    dframe = dframe.drop(onehot_fields, axis=1)
+        dframe[field] = LabelEncoder().fit_transform(dframe[field])
+    
+    # Categorical variables: one-hot encoding
+    # for field in onehot_fields:
+    #     dummies = pd.get_dummies(dframe[field], prefix=field, drop_first=False)
+    #     dframe = pd.concat([dframe, dummies], axis=1)
+    # dframe = dframe.drop(onehot_fields, axis=1)
 
     # Continuous variables: scaling
     continuous_fields = dframe.iloc[:, ~dframe.columns.isin(onehot_fields)]
@@ -259,7 +262,7 @@ def data_preprocess(dframe):
         mean, std = dframe[field].mean(), dframe[field].std()
         scaled_features[field] = [mean, std]
         dframe.loc[:, field] = (dframe[field] - mean)/std
-        
+    
     # Remove NaNs / duplicates / outliers
     dframe = dframe.dropna().reset_index(drop=True)
     dframe.drop_duplicates(inplace=True)
@@ -267,7 +270,7 @@ def data_preprocess(dframe):
 
     return dframe, scaled_features
 
-def train_test_valid_split(dframe,statify_col='Region'):
+def train_test_valid_split(dframe,statify_cols='Region',target_col='Electricity produced by solar panels'):
     """
     we choose to split data with validation/test data to be at the end of time series
     Parameters:
@@ -278,18 +281,24 @@ def train_test_valid_split(dframe,statify_col='Region'):
         pandas.dataframe containing test data
     """
 
-    y = dframe.pop('Electricity produced by solar panels')
+    y = dframe.pop(target_col)
 
     # keep columns containing region data to use for stratifying
-    strat_df = dframe.filter(regex='^Region_',axis=1)
+    strat_df = dframe.copy()
+    for col in statify_cols:
+        strat_df = strat_df.filter(regex=f'^{col}$',axis=1)
+        
     train_X, test_X, train_Y, test_Y = train_test_split(dframe, y, test_size=0.2, random_state=1, 
                                                         shuffle=True, stratify=strat_df)
     
-    # keep columns containing region data to use for stratifying
-    strat_df = train_X.filter(regex='^Region_',axis=1)
+    strat_df = train_X.copy()
+    for col in statify_cols:
+        strat_df = strat_df.filter(regex=f'^{col}$',axis=1)
+
+    # strat_df = train_X.filter(regex=f'^{statify_col}_',axis=1)
     train_X, validation_X, train_Y, validation_Y = train_test_split(train_X, train_Y, test_size=0.25, random_state=1, 
                                                       shuffle=True, stratify=strat_df) # 0.25 x 0.8 = 0.2
-    
+        
     return train_X, validation_X, test_X, train_Y, validation_Y, test_Y
 
 def cross_plot_actual_pred(plot_pred, plot_actual):
@@ -301,11 +310,10 @@ def cross_plot_actual_pred(plot_pred, plot_actual):
     ax.legend()
     plt.show()
 
-def calculate_metrics(actual,pred,scaled_features):
+def calculate_metrics(actual,pred,target_col,scaled_features):
 
-    mean = scaled_features['Electricity produced by solar panels'][0]
-    std = scaled_features['Electricity produced by solar panels'][1]
-
+    mean = scaled_features[target_col][0]
+    std = scaled_features[target_col][1]
     # Get predicted/actual points (scaled back to their original size)
     plot_pred = [x * std + mean for x in pred]
     plot_actual = [x * std + mean for x in actual]
@@ -324,6 +332,17 @@ def calculate_metrics(actual,pred,scaled_features):
     cross_plot_actual_pred(plot_pred, plot_actual)
     
     return metrics
+
+def model_predict(test_X,filename='model.ckpt'):
+    model = Regression.load_from_checkpoint(checkpoint_path=filename)
+    test_X_tensor = torch.tensor(test_X[:10].values.astype(np.float32))
+    pred_Y = model(test_X_tensor)
+    print(pred_Y)
+    return
+
+def keep_best_model_callback(study, trial):
+    if study.best_trial.number == trial.number:
+        study.set_user_attr(key="best_trainer", value=trial.user_attrs["best_trainer"])
 
 def objective(trial,kwargs,df):
     """
@@ -352,7 +371,7 @@ def objective(trial,kwargs,df):
         'l_rate':  trial.suggest_float('l_rate', l_rate[0], l_rate[1], log=True), # loguniform will become deprecated
         'activation': trial.suggest_categorical("activation", kwargs['activation']) if ',' in kwargs['activation'] else kwargs['activation'], #SiLU (Swish) performs good
         'optimizer_name': trial.suggest_categorical("optimizer_name", kwargs['optimizer_name']) if ',' in kwargs['optimizer_name'] else kwargs['optimizer_name'],
-        'batch_size': trial.suggest_categorical('batch_size', kwargs['batch_size'].split(',')),
+        'batch_size': int(trial.suggest_categorical('batch_size', kwargs['batch_size'].split(','))),
         'num_workers': int(kwargs['num_workers'])
     }
 
@@ -378,26 +397,15 @@ def objective(trial,kwargs,df):
     trainer.logger.log_hyperparams(params)
 
     train_loader = model.train_dataloader(train_X,train_Y)
-    # test_loader = model.test_dataloader(test_X,test_Y)
     val_loader = model.val_dataloader(validation_X,validation_Y)
 
-    # print(validation_X, validation_Y)
     print("############################ Traim/Test/Validate ###############################")
     
     trainer.fit(model, train_loader, val_loader)
 
-    # pl.utilities.model_summary.ModelSummary(model, max_depth=-1)
-    
-    # Either best or path to the checkpoint you wish to test. 
-    # If None and the model instance was passed, use the current weights. 
-    # Otherwise, the best model from the previous trainer.fit call will be loaded.
-    # trainer.validate(ckpt_path='best', dataloaders=val_loader)
+    # store each trial trainer and update it at objetive's callback function to keep best
+    trial.set_user_attr(key="best_trainer", value=trainer)
 
-    # trainer.test(ckpt_path='best', dataloaders=test_loader)
-
-    # preds = trainer.predict(ckpt_path='best', dataloaders=test_loader)
-
-    print(trainer.callback_metrics)
     return trainer.callback_metrics["val_loss"].item()
                 
 #  Example taken from Optuna github page:
@@ -420,7 +428,7 @@ def print_optuna_report(study):
     trial = study.best_trial
 
     print("  Value: {}".format(trial.value))
-
+    print(" Number: {}".format(trial.number))
     print("  Params: ")
     for key, value in trial.params.items():
         print("    {}: {}".format(key, value))
@@ -459,27 +467,36 @@ def optuna_optimize(kwargs,df):
     study.optimize(lambda trial: objective(trial,kwargs,df),
                 #  n_jobs=2,
                 #    timeout=600, # 10 minutes
-                   n_trials=10, #click_params.n_trials,
+                   callbacks=[keep_best_model_callback],
+                   n_trials=kwargs['n_trials'],
                    gc_after_trial=True)
     
     print_optuna_report(study)
     
     return study
 
-def optuna_visualize(study, opt_tmpdir):
+def optuna_visualize(study, tmpdir):
 
     plt.close() # close any mpl figures (important, doesn't work otherwise)
     optuna.visualization.matplotlib.plot_param_importances(study)
-    plt.savefig(f"{opt_tmpdir}/plot_param_importances.png"); plt.close()
+    plt.savefig(f"{tmpdir}/plot_param_importances.png"); plt.close()
 
     optuna.visualization.matplotlib.plot_optimization_history(study)
-    plt.savefig(f"{opt_tmpdir}/plot_optimization_history.png"); plt.close()
+    plt.savefig(f"{tmpdir}/plot_optimization_history.png"); plt.close()
     
     optuna.visualization.matplotlib.plot_slice(study)
-    plt.savefig(f"{opt_tmpdir}/plot_slice.png"); plt.close()
+    plt.savefig(f"{tmpdir}/plot_slice.png"); plt.close()
 
     optuna.visualization.matplotlib.plot_intermediate_values(study)
-    plt.savefig(f"{opt_tmpdir}/plot_intermediate_values.png"); plt.close()
+    plt.savefig(f"{tmpdir}/plot_intermediate_values.png"); plt.close()
+
+def model_predict(test_X,test_Y,filename='best_model.ckpt'):
+    model = Regression.load_from_checkpoint(checkpoint_path=filename)
+    test_X_tensor = torch.tensor(test_X[:10].values.astype(np.float32))
+    pred_Y = model(test_X_tensor)
+    print(test_Y)
+    print(pred_Y)
+    return 
 
 # Remove whitespace from your arguments
 @click.command(
@@ -488,16 +505,22 @@ def optuna_visualize(study, opt_tmpdir):
 )
 
 @click.option("--filepath", type=str, default='Sol_pan_comp.csv', help="File containing csv files used by the model")
-@click.option("--seed", type=str, default="42", help='seed used to set random state to the model')
-@click.option("--n_trials", type=str, default="3", help='trials used for HPO')
-@click.option("--max_epochs", type=str, default="3", help='range of number of epochs used by the model')
-@click.option("--n_layers", type=str, default="1", help='range of number of layers used by the model')
-@click.option("--layer_sizes", type=str, default="5", help='range of size of each layer used by the model')
-@click.option("--l_rate", type=str, default="1e-4", help='range of learning rate used by the model')
+@click.option("--seed", type=int, default=42, help='seed used to set random state to the model')
+@click.option("--max_epochs", type=int, default=20, help='range of number of epochs used by the model')
+@click.option("--n_layers", type=str, default='2,6', help='range of number of layers used by the model')
+@click.option("--layer_sizes", type=str, default="128,256,512,1024,2048", help='range of size of each layer used by the model')
+@click.option("--l_rate", type=str, default='0.0001,0.001', help='range of learning rate used by the model')
 @click.option("--activation", type=str, default="ReLU", help='activations function experimented by the model')
 @click.option("--optimizer_name", type=str, default="Adam", help='optimizers experimented by the model') # SGD
-@click.option("--batch_size", type=str, default="3", help='possible batch sizes used by the model') #16,32,
-@click.option("--num_workers", type=str, default="2", help='accelerator (cpu/gpu) processesors and threads used') 
+@click.option("--batch_size", type=str, default='256,512,1024', help='possible batch sizes used by the model') #16,32,
+@click.option("--num_workers", type=int, default=2, help='accelerator (cpu/gpu) processesors and threads used') 
+@click.option('--n_trials', type=int, default=2, help='number of trials for HPO')
+@click.option('--preprocess', type=int, default=1, help='data preprocessing and scaling')
+@click.option('--uneeded_cols', type=str, default='The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction', help='Dataset columns not necesary for training')
+@click.option('--target_col', type=str, default='Electricity produced by solar panels', help='Target column that we want to predict (model output)')
+@click.option('--categorical_cols', type=str, default='Region', help='columns containing categorical data')
+@click.option('--predict', type=int, default=0, help='predict value or not')
+@click.option('--filename', type=str, default='best_model.ckpt', help='filename of best model')
 
 def forecasting_model(**kwargs):
     """
@@ -517,29 +540,46 @@ def forecasting_model(**kwargs):
 
     if not os.path.exists("./temp_files/"): os.makedirs("./temp_files/")
     # store mlflow metrics/artifacts on temp file
-    with tempfile.TemporaryDirectory(dir='./temp_files/') as opt_tmpdir: 
+    with tempfile.TemporaryDirectory(dir='./temp_files/') as tmpdir: 
 
         # ~~~~~~~~~~~~ Data Collection & process ~~~~~~~~~~~~~~~~~~~~
         print("############################ Reading Data ###############################")
-        df = pd.read_csv(kwargs['filepath'],index_col=0)
+        df = pd.read_csv(kwargs['filepath']) #,index_col=0
         df_backup = df.copy()
+        scaler = None
 
         print("############################ Data Preprocess ###############################")
-        
-        df, scaler = data_preprocess(df)
+        # Remove date column (not needed)
+        # uneeded_cols = ['The data','Primary energy consumption after ',
+                        # 'Reduction of primary energy','CO2 emissions reduction']
+        uneeded_cols = kwargs['uneeded_cols'].split(",") #'The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction'
+        target_col = kwargs['target_col']
+        categorical_cols = kwargs['categorical_cols'].split(",") 
+        print(df.info())
+        if(kwargs['preprocess']):
+            df, scaler = data_preprocess(df, uneeded_cols, categorical_cols, target_col)
 
         global train_X, validation_X, test_X, train_Y, validation_Y, test_Y
-        train_X, validation_X, test_X, train_Y, validation_Y, test_Y = train_test_valid_split(df)
-        
+        train_X, validation_X, test_X, train_Y, validation_Y, test_Y = train_test_valid_split(df,categorical_cols,target_col)
+
+        print(df.info())
+        if(kwargs['predict']):
+            model_predict(test_X,kwargs['filename'])
+            return
+                
         study = optuna_optimize(kwargs,df)
         
         # visualize results of study
-        optuna_visualize(study, opt_tmpdir)
+        optuna_visualize(study, tmpdir)
+
+        print(f'Save best model at file: \"{kwargs["filename"]}\"')
+        best_model = study.user_attrs["best_trainer"]
+        best_model.save_checkpoint(kwargs['filename'])
 
         #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Store to Mlflow ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         #store trained model to mlflow with input singature
-        print("\nUploading training csvs and metrics to MLflow server...")
-        logging.info("\nUploading training csvs and metrics to MLflow server...")
+        # print("\nUploading training csvs and metrics to MLflow server...")
+        # logging.info("\nUploading training csvs and metrics to MLflow server...")
         # signature = infer_signature(train_X.head(1), pd.DataFrame(preds))
         # mlflow.pytorch.log_model(model, "model", signature=signature)
         # mlflow.log_params(kwargs)

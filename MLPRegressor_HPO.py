@@ -240,8 +240,8 @@ def data_preprocess(dframe,uneeded_cols,onehot_fields,target_col):
 
     # remove str prefix of "Project Number" and make each entry an int instead of object
     # dframe.set_index('Project number')
-    dframe['Project number'] = dframe['Project number'].str.replace('PME2-', '')
-    dframe['Project number'] = dframe['Project number'].astype(str).astype(np.int64)
+    # dframe['Project number'] = dframe['Project number'].str.replace('PME2-', '')
+    # dframe['Project number'] = dframe['Project number'].astype(str).astype(np.int64)
 
     # Categorical variables: label encoding
     for field in onehot_fields:
@@ -493,9 +493,25 @@ def optuna_visualize(study, tmpdir):
 def model_predict(test_X,test_Y,filename='best_model.ckpt'):
     model = Regression.load_from_checkpoint(checkpoint_path=filename)
     test_X_tensor = torch.tensor(test_X[:10].values.astype(np.float32))
-    pred_Y = model(test_X_tensor)
-    print(test_Y)
-    print(pred_Y)
+    pred_Y = model(test_X_tensor).detach().numpy() #create and convert output tensor to numpy array
+
+    for index, pred  in enumerate(pred_Y):
+        PECB = test_X.iloc[index]['Primary energy consumption before '] # Primary Energy consumption before
+        CISP = test_X.iloc[index]['Current inverter set power'] #Current Inverter set power
+        PECA = (PECB + CISP - float(pred)) * 1.7 #Primary energy consumption after (KW)
+
+        pred = np.append(pred,PECA)
+
+        PECR = PECB - PECA #Reduction of primary energy consumption
+        pred = np.append(pred,PECR)
+        
+        # CO2 emmisions = PECR (in Mwh) * coefficient of t C02
+        pred = np.append(pred, PECR * 0.072)
+        
+        print(pred)
+    
+    # print(test_Y)
+    # print(pred_Y)
     return 
 
 # Remove whitespace from your arguments
@@ -516,7 +532,7 @@ def model_predict(test_X,test_Y,filename='best_model.ckpt'):
 @click.option("--num_workers", type=int, default=2, help='accelerator (cpu/gpu) processesors and threads used') 
 @click.option('--n_trials', type=int, default=2, help='number of trials for HPO')
 @click.option('--preprocess', type=int, default=1, help='data preprocessing and scaling')
-@click.option('--uneeded_cols', type=str, default='The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction', help='Dataset columns not necesary for training')
+@click.option('--uneeded_cols', type=str, default='The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction,Project number,Granted support', help='Dataset columns not necesary for training')
 @click.option('--target_col', type=str, default='Electricity produced by solar panels', help='Target column that we want to predict (model output)')
 @click.option('--categorical_cols', type=str, default='Region', help='columns containing categorical data')
 @click.option('--predict', type=int, default=0, help='predict value or not')
@@ -558,6 +574,8 @@ def forecasting_model(**kwargs):
         print(df.info())
         if(kwargs['preprocess']):
             df, scaler = data_preprocess(df, uneeded_cols, categorical_cols, target_col)
+
+        print(df.info())
 
         global train_X, validation_X, test_X, train_Y, validation_Y, test_Y
         train_X, validation_X, test_X, train_Y, validation_Y, test_Y = train_test_valid_split(df,categorical_cols,target_col)

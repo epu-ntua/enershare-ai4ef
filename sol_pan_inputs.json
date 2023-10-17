@@ -3,20 +3,6 @@
     "description": "This document records the inputs of the LEIF Service 2 system",    
     "type": "object",
     "properties": {
-        "Project Number": {
-            "description": "Unique identifier for each test (structrure: PME2-xxx)",
-            "type": "object",
-            "unit": "NaN",
-            "minimum": "NaN",
-            "maximum": "NaN"  
-        },
-        "Granted support": {
-            "description": "Granted support after installation of solar panels",
-            "type": "int",
-            "unit": "EUR",
-            "minimum": "0",
-            "maximum": "-"  
-        },
         "Electricity consumption of the grid": {
             "description": "Electricity consumption from the grid before the project",
             "type": "float",
@@ -49,8 +35,7 @@
             "description": "The planning region where the house is located. There are five planning regions in Latvia - Kurzeme, Latgale, Riga, Vidzeme and Zemgale planning region.",
             "type": "string",
             "unit": "-",
-            "minimum": "NaN",
-            "maximum": "NaN"  
+            "range": "Kurzeme,Latgale,Riga,Vidzeme,Zemgale"
         }
     }
 }

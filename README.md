@@ -1,2 +1,0 @@
-# leif-services
-LEIF Service

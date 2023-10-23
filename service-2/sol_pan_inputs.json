@@ -1,0 +1,41 @@
+{
+    "title": "LEIF Service 2 inputs",
+    "description": "This document records the inputs of the LEIF Service 2 system",    
+    "type": "object",
+    "properties": {
+        "Electricity consumption of the grid": {
+            "description": "Electricity consumption from the grid before the project",
+            "type": "float",
+            "unit": "[MWh per year]",
+            "minimum": "0",
+            "maximum": "-"  
+        },
+        "Primary energy consumption before": {
+            "description": "Primary energy consumption before the installation of the solar panel system during the project.",
+            "type": "float",
+            "unit": "[KW]",
+            "minimum": "0",
+            "maximum": "-"  
+        },
+        "Current inverter set power": {
+            "description": "Current inverter set power - inverter power that was already installed before the project.",
+            "type": "float",
+            "unit": "[KW]",
+            "minimum": "0",
+            "maximum": "-"  
+        },        
+        "Inverter power in project": {
+            "description": "Inverter set power in project - in addition to the existing inverter.",
+            "type": "float",
+            "unit": "[KW]",
+            "minimum": "0",
+            "maximum": "-"  
+        }, 
+        "Region": {
+            "description": "The planning region where the house is located. There are five planning regions in Latvia - Kurzeme, Latgale, Riga, Vidzeme and Zemgale planning region.",
+            "type": "string",
+            "unit": "-",
+            "range": "Kurzeme,Latgale,Riga,Vidzeme,Zemgale"
+        }
+    }
+}

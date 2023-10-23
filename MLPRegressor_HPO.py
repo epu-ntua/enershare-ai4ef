@@ -234,9 +234,11 @@ class Regression(pl.LightningModule):
 
 from sklearn.preprocessing import LabelEncoder
 
-def data_preprocess(dframe,uneeded_cols,onehot_fields,target_col):
+def data_preprocess(dframe,needed_cols,onehot_fields,target_col):
         
-    dframe.drop([col for col in uneeded_cols if col != target_col], axis=1, inplace=True)
+    # dframe.drop([col for col in unneeded_cols if col != target_col], axis=1, inplace=True)
+
+    dframe = dframe[needed_cols + [target_col]]
 
     # remove str prefix of "Project Number" and make each entry an int instead of object
     # dframe.set_index('Project number')
@@ -332,13 +334,6 @@ def calculate_metrics(actual,pred,target_col,scaled_features):
     cross_plot_actual_pred(plot_pred, plot_actual)
     
     return metrics
-
-def model_predict(test_X,filename='model.ckpt'):
-    model = Regression.load_from_checkpoint(checkpoint_path=filename)
-    test_X_tensor = torch.tensor(test_X[:10].values.astype(np.float32))
-    pred_Y = model(test_X_tensor)
-    print(pred_Y)
-    return
 
 def keep_best_model_callback(study, trial):
     if study.best_trial.number == trial.number:
@@ -490,29 +485,43 @@ def optuna_visualize(study, tmpdir):
     optuna.visualization.matplotlib.plot_intermediate_values(study)
     plt.savefig(f"{tmpdir}/plot_intermediate_values.png"); plt.close()
 
-def model_predict(test_X,test_Y,filename='best_model.ckpt'):
+def model_predict(test_X,scaled_features,target_col,filename='model.ckpt'):
     model = Regression.load_from_checkpoint(checkpoint_path=filename)
-    test_X_tensor = torch.tensor(test_X[:10].values.astype(np.float32))
+
+    test = [4.67,8.8,0,11.04,4]
+    test = [8.21,20.53,0,8,4]
+    test_X = test
+    # mean = scaled_features[target_col][0]
+    # std = scaled_features[target_col][1]
+    
+    # unscaled_test_X = [x * std + mean for x in test_X.values]
+    # unscaled_test_X = [list(map(float, sublist)) for sublist in unscaled_test_X]
+
+    # unscaled_test_X = [float(x) for x in unscaled_test_X]
+    # test_X_tensor = torch.tensor(unscaled_test_X[:10])
+    # pred_Y = model(test_X_tensor).detach().numpy() #create and convert output tensor to numpy array
+
+    test_X_tensor = torch.tensor(test_X)
     pred_Y = model(test_X_tensor).detach().numpy() #create and convert output tensor to numpy array
 
+    print(test_X)
     for index, pred  in enumerate(pred_Y):
-        PECB = test_X.iloc[index]['Primary energy consumption before '] # Primary Energy consumption before
-        CISP = test_X.iloc[index]['Current inverter set power'] #Current Inverter set power
-        PECA = (PECB + CISP - float(pred)) * 1.7 #Primary energy consumption after (KW)
+        ECG = test_X[index] # Electricity consumption of the grid 
+        PECB = ECG * 2.5 # Primary Energy consumption before
+        real_pred = float(pred) * 2.5
+        PECA = float(pred) + PECB - real_pred 
 
-        pred = np.append(pred,PECA)
+        pred = np.append(pred,PECA) # Primary energy consumption after (KW)
 
-        PECR = PECB - PECA #Reduction of primary energy consumption
+        PECR = PECB - PECA  #Reduction of primary energy consumption
         pred = np.append(pred,PECR)
         
         # CO2 emmisions = PECR (in Mwh) * coefficient of t C02
-        pred = np.append(pred, PECR * 0.072)
+        CO2_emmisions = (real_pred / 2.5) * 0.109
+        pred = np.append(pred, CO2_emmisions)
         
         print(pred)
     
-    # print(test_Y)
-    # print(pred_Y)
-    return 
 
 # Remove whitespace from your arguments
 @click.command(
@@ -532,7 +541,8 @@ def model_predict(test_X,test_Y,filename='best_model.ckpt'):
 @click.option("--num_workers", type=int, default=2, help='accelerator (cpu/gpu) processesors and threads used') 
 @click.option('--n_trials', type=int, default=2, help='number of trials for HPO')
 @click.option('--preprocess', type=int, default=1, help='data preprocessing and scaling')
-@click.option('--uneeded_cols', type=str, default='The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction,Project number,Granted support', help='Dataset columns not necesary for training')
+@click.option('--needed_cols', type=str, default='Region,Electricity consumption of the grid,Primary energy consumption before ,Current inverter set power,Inverter power in project', help='Dataset columns not necesary for training')
+# @click.option('--needed_cols', type=str, default='The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction,Project number,Granted support', help='Dataset columns not necesary for training')
 @click.option('--target_col', type=str, default='Electricity produced by solar panels', help='Target column that we want to predict (model output)')
 @click.option('--categorical_cols', type=str, default='Region', help='columns containing categorical data')
 @click.option('--predict', type=int, default=0, help='predict value or not')
@@ -566,14 +576,14 @@ def forecasting_model(**kwargs):
 
         print("############################ Data Preprocess ###############################")
         # Remove date column (not needed)
-        # uneeded_cols = ['The data','Primary energy consumption after ',
+        # needed_cols = ['The data','Primary energy consumption after ',
                         # 'Reduction of primary energy','CO2 emissions reduction']
-        uneeded_cols = kwargs['uneeded_cols'].split(",") #'The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction'
+        needed_cols = kwargs['needed_cols'].split(",") #'The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction'
         target_col = kwargs['target_col']
         categorical_cols = kwargs['categorical_cols'].split(",") 
         print(df.info())
         if(kwargs['preprocess']):
-            df, scaler = data_preprocess(df, uneeded_cols, categorical_cols, target_col)
+            df, scaler = data_preprocess(df, needed_cols, categorical_cols, target_col)
 
         print(df.info())
 
@@ -582,7 +592,7 @@ def forecasting_model(**kwargs):
 
         print(df.info())
         if(kwargs['predict']):
-            model_predict(test_X,kwargs['filename'])
+            model_predict(test_X,scaler,target_col,kwargs['filename'])
             return
                 
         study = optuna_optimize(kwargs,df)

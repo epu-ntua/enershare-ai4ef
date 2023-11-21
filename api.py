@@ -50,28 +50,43 @@ service_2_targets = ['Electricity produced by solar panels']
 @app.post("/service_1/inference", tags=["Service 1"])
 async def get_building_parameters_service_1(parameters: dict):
     # here you assume that you have a dictionary with the building parameters submitted by the user.
-    # parameters = [{"name":..., "value":...}, {"name":..., "value":...}, ...]
     print(parameters)
     prediction = None
-    # parameters = {"name1": value1, "name2": value2, ...}
-    # input = [parameters]
-    input = {"Building Total Area": 351.6, 
-        "Reference area": 277.4, 
-        "Above-ground floors": 3, 
-        "Underground floor": 0,
-        "Initial energy class ": "D",
-        "Energy consumption before": 106.04,
-        "Energy class after": "B"}
+    
+    # input = {"Building Total Area": 351.6, 
+    #     "Reference area": 277.4, 
+    #     "Above-ground floors": 3, 
+    #     "Underground floor": 0,
+    #     "Initial energy class ": "D",
+    #     "Energy consumption before": 106.04,
+    #     "Energy class after": "B"}
+    
+    # {"building_total_area": 351.6, 
+    #     "reference_area": 277.4, 
+    #     "above-ground_floors": 3, 
+    #     "underground_floor": 0,
+    #     "initial_energy_class ": "D",
+    #     "energy_consumption _before": 106.04,
+    #     "energy_class_after": "B"}
+    
+    # replace "_" with white spaces for all dictionary keys
+    parameters = {key.replace("_", " "): value for key, value in parameters.items()}
+    # capitalize all keys except first (see next command)
+    parameters = {key.capitalize(): value for key, value in parameters.items() if key != 'Building total area'}
+    # capitalize each letter after "_" in first key of dict (Reference Total Area) because the dataset does not have consistent capitalization
+    parameters = {'Building Total Area' if key == 'Building total area' else key: value for key, value in parameters.items()}
+    parameters = [parameters]
 
-    if(not parameters):
-        parameters = [input]
-    else:
-        parameters = [parameters]
-
+    print(parameters)
 
     best_model = 'best_classifier.pkl'
     # prediction = {'prediction':'Service 1'}
     prediction = service_1_model_predict(best_model, service_1_targets, parameters)
+    print(f'pred: {prediction}')
+    # convert key to lowercase
+    prediction = {key.lower(): value for key, value in prediction.items()}
+    # replace white spaces with "_" for all dictionary keys    
+    prediction = {key.replace(" ","_"): value for key, value in prediction.items()}
 
     return prediction # as json that george wants.
 
@@ -83,21 +98,38 @@ async def get_building_parameters_service_2(parameters: dict):
     prediction = None
     print(parameters)
 
-    input = {"Region": "Rīga", 
-        "Electricity consumption of the grid": 4.65, 
-        "Primary energy consumption before ": 11.63, 
-        "Current inverter set power": 0.0, 
-        "Inverter power in project": 10}
+    # input = {"Region": "Rīga", 
+    #     "Electricity consumption of the grid": 4.65, 
+    #     "Primary energy consumption before ": 11.63, 
+    #     "Current inverter set power": 0.0, 
+    #     "Inverter power in project": 10}
 
-    if(not parameters):
-        parameters = [input]
-    else:
-        parameters = [parameters]
-    
+    # {"region": "Rīga", 
+    #         "electricity_consumption_of_the_grid": 4.65, 
+    #         "primary_energy_consumption_before ": 11.63, 
+    #         "current_inverter_set_power": 0.0, 
+    #         "inverter_power_in_project": 10}
+    print(parameters)
+
+    # replace "_" with white spaces for all dictionary keys
+    parameters = {key.replace("_", " "): value for key, value in parameters.items()}
+    # Convert all keys to lowercase
+    parameters = {key.capitalize(): value for key, value in parameters.items()}
+    parameters = [parameters]
+
+    print(parameters)
+
     filename='./models-scalers/best_regressor.ckpt'
     categorical_cols='Region'
     # prediction = {'prediction':'Service 2'}
     prediction = service_2_model_predict(parameters, service_2_targets, categorical_cols, filename)
+
+    # Round all values to two digits
+    prediction = {key: round(value, 2) for key, value in prediction.items()}
+    # convert key to lowercase
+    prediction = {key.lower(): value for key, value in prediction.items()}
+    # replace white spaces with "_" for all dictionary keys    
+    prediction = {key.replace(" ","_"): value for key, value in prediction.items()}
 
     return prediction # as json that george wants.
 
@@ -149,4 +181,4 @@ async def root():
     return {"message": "Congratulations! Your API is working as expected. Now head over to http://localhost:8080/docs"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="enershare.epu.ntua.gr", port=8080)
+    uvicorn.run(app, host="0.0.0.0", port=8888, reload=True)

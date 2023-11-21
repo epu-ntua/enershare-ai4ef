@@ -510,7 +510,7 @@ def optuna_visualize(study, tmpdir):
     plt.savefig(f"{tmpdir}/plot_intermediate_values.png"); plt.close()
 
 def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region', filename='best_model.ckpt'):
-    print(filename)
+    # print(filename)
     model = Regression.load_from_checkpoint(checkpoint_path=filename)
 
     with open('./models-scalers/service_2_scalers.pkl', 'rb') as f: scalers = pickle.load(f)
@@ -523,12 +523,12 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
 
     # print(test_X)
     # test_X = [test_X]
-    print(test_X)
+    # print(test_X)
     test_X = pd.DataFrame.from_dict(test_X)
 
     # test_X = pd.DataFrame.from_dict(dict)
      
-    print(test_X)
+    # print(test_X)
 
     test_X = data_scaling(test_X, categorical_cols, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
 
@@ -538,20 +538,20 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
 
     unscaled_test_X = pd.DataFrame(); unscaled_pred_Y = pd.DataFrame()
 
-    print(test_X.head())
+    # print(test_X.head())
     for column, scaler in scalers['X_categorical_scalers'].items():
         unscaled_test_X[column] = scaler.inverse_transform(test_X[[column]].values.ravel())
     for column, scaler in scalers['X_continuous_scalers'].items():
         unscaled_test_X[column] = scaler.inverse_transform(test_X[[column]])
 
-    print(scalers['Y_continuous_scalers'])
+    # print(scalers['Y_continuous_scalers'])
     
     # for column, scaler in scalers['Y_categorical_scalers'].items():
     #     unscaled_pred_Y[column] = scaler.inverse_transform(pred_Y[column])
     for column, scaler in scalers['Y_continuous_scalers'].items():
-        print(pred_Y)
+        # print(pred_Y)
         unscaled_pred_Y = scaler.inverse_transform(pred_Y.reshape(-1,1)).ravel()
-        print(unscaled_pred_Y)
+        # print(unscaled_pred_Y)
 
     for index, pred  in enumerate(unscaled_pred_Y):
         ECG = unscaled_test_X.iloc[index,1] # Electricity consumption of the grid 
@@ -571,7 +571,7 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
         pred = np.append(pred, CO2_emmisions)       
         service_2_targets = np.append(service_2_targets,'CO2 emmisions reduction')
          
-        print(pred)
+        # print(pred)
     
     print(pred)
     print(service_2_targets)

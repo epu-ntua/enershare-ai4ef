@@ -271,15 +271,15 @@ def service_1_model_predict(best_model,service_1_targets,dict):
     
     specs = pd.DataFrame.from_dict(dict) 
     
-    print(specs.head())
-    print(specs.info())
+    # print(specs.head())
+    # print(specs.info())
     scaled_specs = data_scaling(specs, categorical_cols, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
 
     pred_Y = clf.predict(scaled_specs).ravel().tolist()
     
     pred_dict = {service_1_targets[i]: pred_Y[i] for i in range(len(service_1_targets))}
 
-    print(pred_dict)
+    # print(pred_dict)
 
     return pred_dict
 
@@ -303,7 +303,7 @@ def forecasting_model():
 
     keys = list(models.keys())
     final_scores = {keys[i]: best_scores[i] for i in range(len(keys))}
-    print(final_scores)
+    # print(final_scores)
 
     best_model = max(key for key, value in final_scores.items() if value == max(final_scores.values()))
 

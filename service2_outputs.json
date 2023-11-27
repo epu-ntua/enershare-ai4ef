@@ -1,39 +1,43 @@
 {
-    "title": "LEIF Service 2 inputs",
-    "description": "This document records the outputs of the LEIF Service 2 system",    
-    "type": "object",
-    "properties": {
-        "Electricity produced by solar panels": {
-            "description": "The amount of electricity produced by the solar panels, which are installed in the project",
-            "type": "float",
-            "unit": "[MWh per year]",
-            "minimum": "0",
-            "maximum": "-",
-            "id": "5"    
-        },
-        "Primary energy consumption after": {
-            "description": "Primary energy consumption after installing the solar panel system",
-            "type": "float",
-            "unit": "[MWh per year]",
-            "minimum": "0",
-            "maximum": "-",
-            "id": "6"    
-        },
-        "Reduction of primary energy consumption": {
-            "description": "Reduction of primary energy consumption: Difference between primary energy consumption before and after",
-            "type": "float",
-            "unit": "[MWh per year]",
-            "minimum": "0",
-            "maximum": "-",
-            "id": "7"    
-        },
-        "CO2 emissions reduction": {
-            "description": "The amount of CO2 emissions reduction in the project",
-            "type": "float",
-            "unit": "[t CO2 per year]",
-            "minimum": "0",
-            "maximum": "-",
-            "id": "8"    
-        }
+  "title": "LEIF Service 2 inputs",
+  "description": "This document records the outputs of the LEIF Service 2 system",
+  "type": "object",
+  "properties": [
+    {
+      "title": "Electricity produced by solar panels",
+      "description": "The amount of electricity produced by the solar panels, which are installed in the project",
+      "type": "float",
+      "unit": "[MWh per year]",
+      "minimum": "0",
+      "maximum": "-",
+      "id": "1"
+    },
+    {
+      "title": "Primary energy consumption after (KW)",
+      "description": "Primary energy consumption after installing the solar panel system",
+      "type": "float",
+      "unit": "[MWh per year]",
+      "minimum": "0",
+      "maximum": "-",
+      "id": "2"
+    },
+    {
+      "title": "Reduction of primary energy consumption",
+      "description": "Reduction of primary energy consumption: Difference between primary energy consumption before and after",
+      "type": "float",
+      "unit": "[MWh per year]",
+      "minimum": "0",
+      "maximum": "-",
+      "id": "3"
+    },
+    {
+      "title": "CO2 emissions reduction",
+      "description": "The amount of CO2 emissions reduction in the project",
+      "type": "float",
+      "unit": "[t CO2 per year]",
+      "minimum": "0",
+      "maximum": "-",
+      "id": "4"
     }
+  ]
 }

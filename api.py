@@ -3,16 +3,10 @@ import uvicorn
 # import httpx
 from enum import Enum
 import pandas as pd
-
-# from utils import ConfigParser
+import json
 from fastapi.middleware.cors import CORSMiddleware
 import psutil, nvsmi
-from dotenv import load_dotenv
 # from fastapi import APIRouter
-load_dotenv()
-# explicitly set environment variables if any
-# example:
-# MLFLOW_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI")
 
 tags_metadata = [
     {"name": "Service 1", "description": "REST APIs for service 1"},
@@ -43,95 +37,131 @@ from classifier import service_1_model_predict
 from MLPRegressor_HPO import service_2_model_predict
 from MLPRegressor_HPO import Regression
 
-service_1_targets = ['Carrying out construction works ','Reconstruction of engineering systems',
+service_1_targets = ['Carrying out construction works','Reconstruction of engineering systems',
                      'Heat installation','Water heating system']
 service_2_targets = ['Electricity produced by solar panels']
 
+# Function to convert 1 or 0 to boolean
+def convert_to_boolean(value):
+    if value == 1:
+        return True
+    elif value == 0:
+        return False
+    else:
+        return value
+
 @app.post("/service_1/inference", tags=["Service 1"])
 async def get_building_parameters_service_1(parameters: dict):
-    # here you assume that you have a dictionary with the building parameters submitted by the user.
-    print(parameters)
     prediction = None
-    
-    # input = {"Building Total Area": 351.6, 
-    #     "Reference area": 277.4, 
-    #     "Above-ground floors": 3, 
-    #     "Underground floor": 0,
-    #     "Initial energy class ": "D",
-    #     "Energy consumption before": 106.04,
-    #     "Energy class after": "B"}
-    
+        
     # {"building_total_area": 351.6, 
     #     "reference_area": 277.4, 
-    #     "above-ground_floors": 3, 
+    #     "above_ground_floors": 3, 
     #     "underground_floor": 0,
-    #     "initial_energy_class ": "D",
-    #     "energy_consumption _before": 106.04,
+    #     "initial_energy_class": "D",
+    #     "energy_consumption_before": 106.04,
     #     "energy_class_after": "B"}
-    
+    #
+    # replace "_" with "-" said dictionary key
+    # parameters['above-ground_floors'] = parameters.pop('above_ground_floors')
+    # parameters['initial_energy_class '] = parameters.pop('initial_energy_class')
+
     # replace "_" with white spaces for all dictionary keys
     parameters = {key.replace("_", " "): value for key, value in parameters.items()}
     # capitalize all keys except first (see next command)
-    parameters = {key.capitalize(): value for key, value in parameters.items() if key != 'Building total area'}
+    parameters = {key.capitalize(): value for key, value in parameters.items()}
     # capitalize each letter after "_" in first key of dict (Reference Total Area) because the dataset does not have consistent capitalization
-    parameters = {'Building Total Area' if key == 'Building total area' else key: value for key, value in parameters.items()}
+    # parameters = {'Building Total Area' if key == 'Building total area' else key: value for key, value in parameters.items()}
     parameters = [parameters]
-
-    print(parameters)
 
     best_model = 'best_classifier.pkl'
     # prediction = {'prediction':'Service 1'}
     prediction = service_1_model_predict(best_model, service_1_targets, parameters)
     print(f'pred: {prediction}')
     # convert key to lowercase
-    prediction = {key.lower(): value for key, value in prediction.items()}
-    # replace white spaces with "_" for all dictionary keys    
-    prediction = {key.replace(" ","_"): value for key, value in prediction.items()}
+    # prediction = {key.lower(): value for key, value in prediction.items()}
+    # # replace white spaces with "_" for all dictionary keys    
+    # prediction = {key.replace(" ","_"): value for key, value in prediction.items()}
 
-    return prediction # as json that george wants.
+    with open('./json_files/EF_comp_outputs.json', 'r') as json_file:
+        json_template = json.load(json_file)
+        print(json_template)
+        properties = []
+
+        # Update the JSON template with values from the prediction dictionary
+        for property_dict in json_template["properties"]:
+            title = property_dict["title"]
+            if title in prediction:
+                updated_property = {
+                    "title": title,
+                    "description": property_dict["description"],
+                    "id": property_dict["id"],
+                    "value": str(convert_to_boolean(prediction[title]))
+                }
+                properties.append(updated_property)
+
+        # Create a new JSON structure with the updated fields
+        properties_json = {"properties": properties}
+
+        # Print the resulting JSON
+        print(properties_json)
+        return properties_json
 
 @app.post('/service_2/inference', tags=['Service 2'])
 async def get_building_parameters_service_2(parameters: dict):
-
-    # here you assume that you have a dictionary with the building parameters submitted by the user.
-    # parameters = [{"name":..., "value":...}, {"name":..., "value":...}, ...]
     prediction = None
-    print(parameters)
-
-    # input = {"Region": "Rīga", 
-    #     "Electricity consumption of the grid": 4.65, 
-    #     "Primary energy consumption before ": 11.63, 
-    #     "Current inverter set power": 0.0, 
-    #     "Inverter power in project": 10}
 
     # {"region": "Rīga", 
     #         "electricity_consumption_of_the_grid": 4.65, 
-    #         "primary_energy_consumption_before ": 11.63, 
+    #         "primary_energy_consumption_before": 11.63, 
     #         "current_inverter_set_power": 0.0, 
     #         "inverter_power_in_project": 10}
-    print(parameters)
 
     # replace "_" with white spaces for all dictionary keys
+    # parameters['primary_energy_consumption_before '] = parameters.pop('primary_energy_consumption_before')#
     parameters = {key.replace("_", " "): value for key, value in parameters.items()}
+
+    # remove suffix space between 
     # Convert all keys to lowercase
     parameters = {key.capitalize(): value for key, value in parameters.items()}
     parameters = [parameters]
 
-    print(parameters)
-
     filename='./models-scalers/best_regressor.ckpt'
     categorical_cols='Region'
-    # prediction = {'prediction':'Service 2'}
     prediction = service_2_model_predict(parameters, service_2_targets, categorical_cols, filename)
 
     # Round all values to two digits
     prediction = {key: round(value, 2) for key, value in prediction.items()}
     # convert key to lowercase
-    prediction = {key.lower(): value for key, value in prediction.items()}
-    # replace white spaces with "_" for all dictionary keys    
-    prediction = {key.replace(" ","_"): value for key, value in prediction.items()}
+    # prediction = {key.lower(): value for key, value in prediction.items()}
+    # # replace white spaces with "_" for all dictionary keys    
+    # prediction = {key.replace(" ","_"): value for key, value in prediction.items()}
 
-    return prediction # as json that george wants.
+    with open('./json_files/sol_pan_outputs.json', 'r') as json_file:
+        json_template = json.load(json_file)
+        print(json_template)
+        properties = []
+
+        # Update the JSON template with values from the prediction dictionary
+        for property_dict in json_template["properties"]:
+            title = property_dict["title"]
+            if title in prediction:
+                updated_property = {
+                    "title": title,
+                    "description": property_dict["description"],
+                    "id": property_dict["id"],
+                    "value": str(convert_to_boolean(prediction[title]))
+                }
+                properties.append(updated_property)
+
+        # Create a new JSON structure with the updated fields
+        properties_json = {"properties": properties}
+
+        # Print the resulting JSON
+        print(properties_json)
+        return properties_json
+
+    # return prediction # as json that george wants.
 
 @app.get('/system_monitoring/get_cpu_usage', tags=['System Monitoring'])
 async def get_cpu_usage():

@@ -510,25 +510,17 @@ def optuna_visualize(study, tmpdir):
     plt.savefig(f"{tmpdir}/plot_intermediate_values.png"); plt.close()
 
 def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region', filename='best_model.ckpt'):
-    # print(filename)
     model = Regression.load_from_checkpoint(checkpoint_path=filename)
 
     with open('./models-scalers/service_2_scalers.pkl', 'rb') as f: scalers = pickle.load(f)
 
     # test_X = [{"Region": "Rīga", 
     #     "Electricity consumption of the grid": 4.65, 
-    #     "Primary energy consumption before ": 11.63, 
-    #     "Current\xa0inverter\xa0set\xa0power": 0.0, 
+    #     "Primary energy consumption before": 11.63, 
+    #     "Current inverter set power": 0.0, 
     #     "Inverter power in project": 10}]
 
-    # print(test_X)
-    # test_X = [test_X]
-    # print(test_X)
     test_X = pd.DataFrame.from_dict(test_X)
-
-    # test_X = pd.DataFrame.from_dict(dict)
-     
-    # print(test_X)
 
     test_X = data_scaling(test_X, categorical_cols, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
 
@@ -538,20 +530,13 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
 
     unscaled_test_X = pd.DataFrame(); unscaled_pred_Y = pd.DataFrame()
 
-    # print(test_X.head())
     for column, scaler in scalers['X_categorical_scalers'].items():
         unscaled_test_X[column] = scaler.inverse_transform(test_X[[column]].values.ravel())
     for column, scaler in scalers['X_continuous_scalers'].items():
         unscaled_test_X[column] = scaler.inverse_transform(test_X[[column]])
 
-    # print(scalers['Y_continuous_scalers'])
-    
-    # for column, scaler in scalers['Y_categorical_scalers'].items():
-    #     unscaled_pred_Y[column] = scaler.inverse_transform(pred_Y[column])
     for column, scaler in scalers['Y_continuous_scalers'].items():
-        # print(pred_Y)
         unscaled_pred_Y = scaler.inverse_transform(pred_Y.reshape(-1,1)).ravel()
-        # print(unscaled_pred_Y)
 
     for index, pred  in enumerate(unscaled_pred_Y):
         ECG = unscaled_test_X.iloc[index,1] # Electricity consumption of the grid 
@@ -569,15 +554,10 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
         # CO2 emmisions = PECR (in Mwh) * coefficient of t C02
         CO2_emmisions = (real_pred / 2.5) * 0.109
         pred = np.append(pred, CO2_emmisions)       
-        service_2_targets = np.append(service_2_targets,'CO2 emmisions reduction')
+        service_2_targets = np.append(service_2_targets,'CO2 emissions reduction')
          
-        # print(pred)
-    
-    print(pred)
-    print(service_2_targets)
     pred_dict = {service_2_targets[i]: pred[i] for i in range(len(service_2_targets))}
     print(pred_dict)
-    # pred_dict = dict(zip(service_2_targets, pred_Y))
     
     return pred_dict
 
@@ -599,8 +579,7 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
 @click.option("--num_workers", type=int, default=2, help='accelerator (cpu/gpu) processesors and threads used') 
 @click.option('--n_trials', type=int, default=2, help='number of trials for HPO')
 @click.option('--preprocess', type=int, default=1, help='data preprocessing and scaling')
-@click.option('--needed_cols', type=str, default='Region,Electricity consumption of the grid,Primary energy consumption before ,Current inverter set power,Inverter power in project', help='Dataset columns not necesary for training')
-# @click.option('--needed_cols', type=str, default='The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction,Project number,Granted support', help='Dataset columns not necesary for training')
+@click.option('--needed_cols', type=str, default='Region,Electricity consumption of the grid,Primary energy consumption before,Current inverter set power,Inverter power in project', help='Dataset columns not necesary for training')
 @click.option('--target_col', type=str, default='Electricity produced by solar panels', help='Target column that we want to predict (model output)')
 @click.option('--categorical_cols', type=str, default='Region', help='columns containing categorical data')
 @click.option('--predict', type=int, default=0, help='predict value or not')
@@ -632,39 +611,15 @@ def forecasting_model(**kwargs):
 
         print("############################ Data Preprocess ###############################")
         # Remove date column (not needed)
-        # needed_cols = ['The data','Primary energy consumption after ',
-                        # 'Reduction of primary energy','CO2 emissions reduction']
         needed_cols = kwargs['needed_cols'].split(",") #'The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction'
         target_col = kwargs['target_col']
         categorical_cols = kwargs['categorical_cols'].split(",") 
-        # print(df.info())
 
         df = df[needed_cols + [target_col]]
 
         global train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers
         train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers = train_test_valid_split(df,categorical_cols,target_col)
 
-        # train_scalers = {}; categorical_scalers = {}
-        # use scalers from train data on val/test data
-        
-        # train_X, train_scalers, categorical_scalers = data_scaling(train_X, categorical_cols, train=True)
-        # train_Y, target_scalers = data_scaling(train_Y, categorical_cols, train=True, target=True)
-        
-        # validation_X = data_scaling(validation_X, categorical_cols, categorical_scalers, train_scalers)
-        # validation_Y = data_scaling(validation_Y, needed_cols, target_scalers, train_scalers)
-        
-        # test_X = data_scaling(test_X, categorical_cols, categorical_scalers, train_scalers)
-        # test_Y = data_scaling(test_Y, needed_cols, target_scalers, train_scalers)
-        
-        # print(train_X.shape)
-        # print(train_Y.shape)
-        # print(test_X.shape)
-        # print(test_Y.shape)
-        # print(validation_X.shape)
-        # print(validation_Y.shape)
-        # print(train_X.info())
-        # print(df.info())
-        # return
         if(kwargs['predict']):
             print(kwargs['filename'])
             service_2_model_predict(test_X, target_col, categorical_cols, kwargs['filename'])
@@ -679,8 +634,6 @@ def forecasting_model(**kwargs):
         best_model = study.user_attrs["best_trainer"]
         best_model.save_checkpoint(kwargs['filename'])
         print(f'Save data scalers at files: \"categorical_scalers\" and \"train_scalers\"')
-        # with open('categorical_scalers.pkl', 'wb') as f: pickle.dump(categorical_scalers, f)
-        # with open('train_scalers.pkl', 'wb') as f: pickle.dump(train_scalers, f)
         with open('./models-scalers/service_2_scalers.pkl', 'wb') as f: pickle.dump(scalers, f)
         
         #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Store to Mlflow ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -697,5 +650,5 @@ def forecasting_model(**kwargs):
 if __name__ == '__main__':
     print("\n=========== Forecasing Model =============")
     logging.info("\n=========== Forecasing Model =============")
-    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)    
+    # mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)    
     forecasting_model()

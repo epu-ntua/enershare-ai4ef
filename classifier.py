@@ -51,7 +51,7 @@ models = {'KNN': KNeighborsClassifier(),
 
 param_grid = [{'KNN__n_neighbors': [1, 3, 5, 7, 9, 11, 13, 15], 'KNN__weights': ['uniform', 'distance']},
             {'SVC__estimator__kernel': ['rbf', 'linear'], 'SVC__estimator__gamma': ['scale', 'auto'], 'SVC__estimator__C': [10, 100, 1000]},
-            {'LR__estimator__penalty': ['l1', 'l2'], 'LR__estimator__C': [1.0, 0.5, 0.1], 'LR__estimator__solver': ['lbfgs','liblinear']},
+            {'LR__estimator__penalty': ['none', 'l2'], 'LR__estimator__C': [1.0, 0.5, 0.1], 'LR__estimator__solver': ['lbfgs','liblinear']},
             #   {'GNB__priors':[None, [0.5,0.5], [0.1, 0.9], [0.000001,0.99999], [0.000000001,0.99999999]]},
             {'DT__criterion': ['entropy'], 'DT__max_depth': [6], 'DT__min_samples_leaf': [1], 'DT__min_samples_split': [4]},
             {'RF__n_estimators': [200, 600], 'RF__max_depth': [4, 10, None], 'RF__min_samples_leaf': [1, 2, 5]},
@@ -63,18 +63,18 @@ param_grid = [{'KNN__n_neighbors': [1, 3, 5, 7, 9, 11, 13, 15], 'KNN__weights': 
             'XGB__subsample': [1.0, 0.5, 0.1], 'XGB__n_estimators': [200, 600]}
              ]
 
-feature_cols = ['Building Total Area','Reference area','Above-ground floors',
+feature_cols = ['Building total area','Reference area','Above-ground floors',
                 'Underground floor','Energy consumption before',
-                'Initial energy class ','Energy class after']
+                'Initial energy class','Energy class after']
 
-target_cols = ['Carrying out construction works ','Reconstruction of engineering systems',
+target_cols = ['Carrying out construction works','Reconstruction of engineering systems',
                 'Heat installation','Water heating system']
 
 categorical_cols = ['Above-ground floors','Underground floor',
-                    'Carrying out construction works ',
+                    'Carrying out construction works',
                     'Reconstruction of engineering systems',
                     'Heat installation','Water heating system',
-                    'Initial energy class ','Energy class after']
+                    'Initial energy class','Energy class after']
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -269,6 +269,7 @@ def service_1_model_predict(best_model,service_1_targets,dict):
     with open('./models-scalers/service_1_scalers.pkl', 'rb') as f: scalers = pickle.load(f)
     with open(f'./models-scalers/best_classifier.pkl', 'rb') as f: clf = pickle.load(f)
     
+    print(dict)
     specs = pd.DataFrame.from_dict(dict) 
     
     # print(specs.head())
@@ -316,13 +317,13 @@ def forecasting_model():
     best_model_index = list(models).index(best_model)
     model_evalutate(best_model, best_model_index, best_scores, test_X, test_Y)
 
-    # dict = [{'Building Total Area': 351.6, 
-    #         'Reference area': 277.4, 
-    #         'Above-ground floors': 3, 
-    #         'Underground floor': 0,
-    #         'Initial energy class ': 'D',
-    #         'Energy consumption before': 106.04,
-    #         'Energy class after': 'B'}]
+    dict = [{'Building total area': 351.6, 
+            'Reference area': 277.4, 
+            'Above-ground floors': 3, 
+            'Underground floor': 0,
+            'Initial energy class': 'D',
+            'Energy consumption before': 106.04,
+            'Energy class after': 'B'}]
 
     service_1_model_predict(best_model, target_cols, dict)
 

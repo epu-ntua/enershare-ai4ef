@@ -13,7 +13,7 @@
       "id": "1"
     },
     {
-      "title": "Primary energy consumption after (KW)",
+      "title": "Primary energy consumption after",
       "description": "Primary energy consumption after installing the solar panel system",
       "type": "float",
       "unit": "[MWh per year]",

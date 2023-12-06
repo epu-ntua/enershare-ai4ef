@@ -5,7 +5,8 @@ from enum import Enum
 import pandas as pd
 import json
 from fastapi.middleware.cors import CORSMiddleware
-import psutil, nvsmi
+import psutil
+import nvsmi # takes a long time to install
 # from fastapi import APIRouter
 
 tags_metadata = [
@@ -101,11 +102,11 @@ async def get_building_parameters_service_1(parameters: dict):
                 properties.append(updated_property)
 
         # Create a new JSON structure with the updated fields
-        properties_json = {"properties": properties}
+        # properties_json = {"properties": properties}
 
         # Print the resulting JSON
-        print(properties_json)
-        return properties_json
+        print(properties)
+        return properties
 
 @app.post('/service_2/inference', tags=['Service 2'])
 async def get_building_parameters_service_2(parameters: dict):
@@ -154,12 +155,12 @@ async def get_building_parameters_service_2(parameters: dict):
                 }
                 properties.append(updated_property)
 
-        # Create a new JSON structure with the updated fields
-        properties_json = {"properties": properties}
+    #     # Create a new JSON structure with the updated fields
+    #     properties_json = {"properties": properties}
 
         # Print the resulting JSON
-        print(properties_json)
-        return properties_json
+        print(properties)
+        return properties
 
     # return prediction # as json that george wants.
 
@@ -211,4 +212,4 @@ async def root():
     return {"message": "Congratulations! Your API is working as expected. Now head over to http://localhost:8080/docs"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8888, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=5000, reload=True)

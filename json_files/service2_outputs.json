@@ -10,16 +10,16 @@
       "unit": "[MWh per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "1"
+      "id": "5"
     },
     {
-      "title": "Primary energy consumption after",
+      "title": "Primary energy consumption after (KW)",
       "description": "Primary energy consumption after installing the solar panel system",
       "type": "float",
       "unit": "[MWh per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "2"
+      "id": "6"
     },
     {
       "title": "Reduction of primary energy consumption",
@@ -28,7 +28,7 @@
       "unit": "[MWh per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "3"
+      "id": "7"
     },
     {
       "title": "CO2 emissions reduction",
@@ -37,7 +37,7 @@
       "unit": "[t CO2 per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "4"
+      "id": "8"
     }
   ]
 }

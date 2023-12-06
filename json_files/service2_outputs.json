@@ -10,7 +10,7 @@
       "unit": "[MWh per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "5"
+      "id": "1"
     },
     {
       "title": "Primary energy consumption after (KW)",
@@ -19,7 +19,7 @@
       "unit": "[MWh per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "6"
+      "id": "2"
     },
     {
       "title": "Reduction of primary energy consumption",
@@ -28,7 +28,7 @@
       "unit": "[MWh per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "7"
+      "id": "3"
     },
     {
       "title": "CO2 emissions reduction",
@@ -37,7 +37,7 @@
       "unit": "[t CO2 per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "8"
+      "id": "4"
     }
   ]
 }

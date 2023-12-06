@@ -19,7 +19,7 @@
       "unit": "-",
       "minimum": "0",
       "maximum": "2",
-      "id": "2"
+      "id": "9"
     },
     {
       "title": "Water heating system",
@@ -28,7 +28,7 @@
       "unit": "-",
       "minimum": "0",
       "maximum": "3",
-      "id": "3"
+      "id": "10"
     },
     {
       "title": "Heat installation",
@@ -37,7 +37,7 @@
       "unit": "-",
       "minimum": "0",
       "maximum": "4",
-      "id": "4"
+      "id": "11"
     }
   ]
 }

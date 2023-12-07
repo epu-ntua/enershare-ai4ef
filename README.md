@@ -44,8 +44,7 @@ Service 2 regression provides hyperparameter tuning on our MLP architecture to d
 
 |   Parameters   | Type |        Default Value       |                           Description                           |
 |:--------------:|:----:|:--------------------------:|:---------------------------------------------------------------:|
-|     stages     |  str |            'all            |    comma seperated entry point names to execute from pipeline   |
-|     dir_in     |  str |     '../original_data/'    |        Folder path containing csv files used by the model       |
+|     dir_in     |  str | './Sol_pan_comp.csv'       |        Folder path containing csv files used by the model       |
 |    local_tz    | bool |            False           |      flag if you want local (True) or UTC (False) timezone      |
 |      seed      |  str |            '42'            |            seed used to set random state to the model           |
 |    n_trials    |  int |             '2'            |        number of trials - different tuning oh hyperparams       |

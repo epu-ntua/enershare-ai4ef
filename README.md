@@ -20,7 +20,15 @@ The project also includes:
 docker compose build
 docker compose up -d
 ```
-  
+
+## Data format
+
+Our pipelines are currently capable of processing a single csv file at a time, for the purposes of the service. 
+Data must: 
+* be in csv format 
+* contain the columns registered either by the user-provided values or default values of the commnand-line arguments (see service 2 for more details)
+Please fill command line arguments refering to columns of the dataset provided, otherwise the code will **not** function properly
+
 ## Usage
 
 ### Service 1 (classifier)
@@ -36,6 +44,20 @@ Service 1 classification provides cross-validation grid search among many models
 | Random Forest  | {'n_estimators': [200, 600], 'max_depth': [4, 10, None], 'min_samples_leaf': [1, 2, 5]}                           |
 | MLP            | {'hidden_layer_sizes': [150, 100, 50], 'activation': ['relu', 'logistic', 'tanh'], 'solver': ['adam', 'lbfgs', 'sgd']}|
 | XGBoost        | {'learning_rate': [0.1, 0.2, 0.3], 'max_depth': [1, 2, 3, 4, 5, 6], 'min_child_weight': [1, 2], 'subsample': [1.0, 0.5, 0.1], 'n_estimators': [200, 600]}|
+
+Currently classsifier does not support custom command line arguments as features as their hardcoded in the code
+
+|   Feature Columns     |         Categorical Columns           |           Target Columns              |
+|:---------------------:|:-------------------------------------:|:-------------------------------------:|
+| Building total area   | Above-ground floors                   | Carrying out construction works       |
+|   Reference area      |  Underground floor                    | Reconstruction of engineering systems |
+| Above-ground floors   | Carrying out construction works       |     Heat installation                 |
+|  Underground floor    | Reconstruction of engineering systems |   Water heating system                |
+| Energy consumption before |   Heat installation               |          -                            |
+|  Initial energy class |   Water heating system                |          -                            |
+|  Energy class after   |   Initial energy class                |          -                            |
+|           -           |   Energy class after                  |          -                            |
+
 
 ### Service 2 (Regressor)
 
@@ -57,7 +79,16 @@ Service 2 regression provides hyperparameter tuning on our MLP architecture to d
 |   preprocess   |  int |             '1'            |       boolean if data require preprocessing and scaling         |
 |   needed_cols  |  str |              -             |       Dataset columns necesary for training                     |
 |   target_cols  |  str |              -             |       Target column that we want to predict (model output)      |
-|   categorical_cols  |  str |         -             |            columns containing categorical data                  |
+|   categorical_cols  |  str |         -             |            Columns containing categorical data                  |
+
+Service 2 uses python's [click](https://click.palletsprojects.com/en/8.1.x/api/) to edit these parameter using command line arguments. Please refer to their documentation for further details.
+
+**Example:** 
+```python
+python MLPRegressor_HPO.py --dir_in ../Sol_pan_comp.csv/ --seed 42 --n_trials 20 --max_epochs 300 --n_layers 1 --layer_sizes 100 --l_window 240 --f_horizon 24
+                           --l_rate 0.0001 --activation ReLU --optimizer_name Adam --batch_size 200 --needed_cols Region,Electricity consumption of the grid,Primary energy consumption before,Current inverter set power,Inverter power in project
+                           --target_cols Electricity produced by solar panels --categorical_cols Region
+```
 
 ### FastAPI 
 

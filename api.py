@@ -151,7 +151,8 @@ async def get_building_parameters_service_2(parameters: dict):
                     "title": title,
                     "description": property_dict["description"],
                     "id": property_dict["id"],
-                    "value": str(convert_to_boolean(prediction[title]))
+                    "unit": property_dict['unit'],
+                    "value": str(prediction[title])
                 }
                 properties.append(updated_property)
 

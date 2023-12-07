@@ -1,5 +1,4 @@
 # leif-services
-LEIF Services
 
 The repository for AI4F services for updating building energy class and forecasting effect of potential benefit at installing solar panels.
 

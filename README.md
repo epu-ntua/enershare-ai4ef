@@ -27,6 +27,7 @@ Our pipelines are currently capable of processing a single csv file at a time, f
 Data must: 
 * be in csv format 
 * contain the columns registered either by the user-provided values or default values of the commnand-line arguments (see service 2 for more details)
+  
 Please fill command line arguments refering to columns of the dataset provided, otherwise the code will **not** function properly
 
 ## Usage
@@ -102,7 +103,7 @@ It deploys two (2) endpoints, one for each service with the following openAPI de
 |-------------------------|----------------------------------------------------------------|
 | HTTP Method             | POST                                                           |
 | Endpoint URL            | `<host_ip>::8888/service_1/inference`                          |
-| Parameters              | dict                                                           |
+| Parameters              | No parameters                                                  |
 | Output example          | [{"title":"Carrying out construction works","description":"Carrying out construction works in the enclosing structures during the project (to increase the energy efficiency of the house).","id":"1","value":"True"},{"title":"Reconstruction of engineering systems","description":"Reconstruction of engineering systems (ventilation, recuperation) to increase the energy efficiency of the house (during the project).","id":"2","value":"False"},{"title":"Water heating system","description":"Installation of a new water heating system (during the project).","id":"3","value":"False"},{"title":"Heat installation","description":"Installation of heat installations to ensure the production of heat from renewable energy sources.","id":"4","value":"False"}] |
 | Example CURL request |   `curl -X 'POST' '<host_ip>:8888/service_1/inference' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"building_total_area": 351.6, "reference_area": 277.4, "above_ground_floors": 3, "underground_floor": 0, "initial_energy_class": "D", "energy_consumption_before": 106.04, "energy_class_after": "B"}'` |
 
@@ -112,7 +113,7 @@ It deploys two (2) endpoints, one for each service with the following openAPI de
 |-------------------------|----------------------------------------------------------------|
 | HTTP Method             | POST                                                           |
 | Endpoint URL            | `<host_ip>::8888/service_2/inference`                          |
-| Parameters              | dict                                                           |
+| Parameters              | No parameters                                                  |
 | Output Example          | [{"title":"Electricity produced by solar panels","description":"The amount of electricity produced by the solar panels, which are installed in the project.","id":"5","unit":"[MWh per year]","value":"7.45"},{"title":"Primary energy consumption after (KW)","description":"Primary energy consumption after installing the solar panel system.","id":"6","unit":"[MWh per year]","value":"0.45"},{"title":"Reduction of primary energy consumption","description":"Reduction of primary energy consumption: Difference between primary energy consumption before and after.","id":"7","unit":"[MWh per year]","value":"11.18"},{"title":"CO2 emissions reduction","description":"The amount of CO2 emissions reduction in the project.","id":"8","unit":"[tons of CO2 per year]","value":"0.81"}]|
 | Example CURL request    | `curl -X 'POST' 'http://<host_ip>:8888/service_2/inference' -H 'accept: application/json' -H 'Content-Type: application/json' -d ' {"region": "Rīga", "electricity_consumption_of_the_grid": 4.65, "primary_energy_consumption_before": 11.63, "current_inverter_set_power": 0.0, "inverter_power_in_project": 10}` |
 

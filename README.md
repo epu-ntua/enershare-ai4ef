@@ -84,7 +84,7 @@ Service 2 regression provides hyperparameter tuning on our MLP architecture to d
 Service 2 uses python's [click](https://click.palletsprojects.com/en/8.1.x/api/) to edit these parameter using command line arguments. Please refer to their documentation for further details.
 
 **Example:** 
-```python
+```bash
 python MLPRegressor_HPO.py --dir_in ../Sol_pan_comp.csv/ --seed 42 --n_trials 20 --max_epochs 300 --n_layers 1 --layer_sizes 100 --l_window 240 --f_horizon 24
                            --l_rate 0.0001 --activation ReLU --optimizer_name Adam --batch_size 200 --needed_cols Region,Electricity consumption of the grid,Primary energy consumption before,Current inverter set power,Inverter power in project
                            --target_cols Electricity produced by solar panels --categorical_cols Region

@@ -55,13 +55,13 @@ def convert_to_boolean(value):
 async def get_building_parameters_service_1(parameters: dict):
     prediction = None
         
-    # {"building_total_area": 351.6, 
-    #     "reference_area": 277.4, 
-    #     "above_ground_floors": 3, 
-    #     "underground_floor": 0,
-    #     "initial_energy_class": "D",
-    #     "energy_consumption_before": 106.04,
-    #     "energy_class_after": "B"}
+    {"building_total_area": 351.6, 
+        "reference_area": 277.4, 
+        "above_ground_floors": 3, 
+        "underground_floor": 0,
+        "initial_energy_class": "D",
+        "energy_consumption_before": 106.04,
+        "energy_class_after": "B"}
     #
     # replace "_" with "-" said dictionary key
     # parameters['above-ground_floors'] = parameters.pop('above_ground_floors')
@@ -78,7 +78,7 @@ async def get_building_parameters_service_1(parameters: dict):
     best_model = 'best_classifier.pkl'
     # prediction = {'prediction':'Service 1'}
     prediction = service_1_model_predict(best_model, service_1_targets, parameters)
-    print(f'pred: {prediction}')
+    # print(f'pred: {prediction}')
     # convert key to lowercase
     # prediction = {key.lower(): value for key, value in prediction.items()}
     # # replace white spaces with "_" for all dictionary keys    
@@ -86,7 +86,7 @@ async def get_building_parameters_service_1(parameters: dict):
 
     with open('./json_files/EF_comp_outputs.json', 'r') as json_file:
         json_template = json.load(json_file)
-        print(json_template)
+        # print(json_template)
         properties = []
 
         # Update the JSON template with values from the prediction dictionary
@@ -105,7 +105,7 @@ async def get_building_parameters_service_1(parameters: dict):
         # properties_json = {"properties": properties}
 
         # Print the resulting JSON
-        print(properties)
+        # print(properties)
         return properties
 
 @app.post('/service_2/inference', tags=['Service 2'])
@@ -140,7 +140,7 @@ async def get_building_parameters_service_2(parameters: dict):
 
     with open('./json_files/sol_pan_outputs.json', 'r') as json_file:
         json_template = json.load(json_file)
-        print(json_template)
+        # print(json_template)
         properties = []
 
         # Update the JSON template with values from the prediction dictionary
@@ -160,7 +160,7 @@ async def get_building_parameters_service_2(parameters: dict):
     #     properties_json = {"properties": properties}
 
         # Print the resulting JSON
-        print(properties)
+        # print(properties)
         return properties
 
     # return prediction # as json that george wants.

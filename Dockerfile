@@ -4,13 +4,12 @@ FROM python:3.8
 # Set the working directory in the container
 WORKDIR /leif_app/
 
-COPY ./python_requirements.txt /leif_app/python_requirements.txt
+# Copy the current directory contents into the container at /leif_app
 COPY . /leif_app
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r python_requirements.txt
-
-# Copy the current directory contents into the container at /app
+# RUN apt update && apt upgrade
+RUN pip install -r python_requirements.txt
 
 # Make port 8080 available to the world outside this container
 EXPOSE 8888

@@ -7,13 +7,14 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg') # dont show plots, just save
+import warnings
+warnings.filterwarnings("ignore")  # Suppress all warnings
 
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import LabelEncoder
 
 from sklearn.model_selection import train_test_split
 from scipy.stats import zscore
-from pandas.api.types import is_numeric_dtype
 import pickle
 
 from sklearn.pipeline import Pipeline
@@ -34,6 +35,7 @@ from sklearn.metrics import multilabel_confusion_matrix
 import pickle
 import shutil
 import os
+import click
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Globals ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -63,31 +65,23 @@ param_grid = [{'KNN__n_neighbors': [1, 3, 5, 7, 9, 11, 13, 15], 'KNN__weights': 
             'XGB__subsample': [1.0, 0.5, 0.1], 'XGB__n_estimators': [200, 600]}
              ]
 
-feature_cols = ['Building total area','Reference area','Above-ground floors',
-                'Underground floor','Energy consumption before',
-                'Initial energy class','Energy class after']
-
-target_cols = ['Carrying out construction works','Reconstruction of engineering systems',
-                'Heat installation','Water heating system']
-
-categorical_cols = ['Above-ground floors','Underground floor',
-                    'Carrying out construction works',
-                    'Reconstruction of engineering systems',
-                    'Heat installation','Water heating system',
-                    'Initial energy class','Energy class after']
-
+feature_cols = None; target_cols = None
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def data_scaling(dframe, onehot_fields, categorical_scalers=None, train_scalers=None, train=False, target=False):
+def data_scaling(dframe, categorical_scalers=None, train_scalers=None, train=False, target=False):
 
     # if target dataframe, then its a single-column df, a series. Need to convert it back to df
     if(target): dframe = pd.DataFrame(dframe)
 
+    categorical_cols = [col for col in dframe.columns if dframe[col].isin([0, 1]).all() or dframe[col].apply(lambda x: isinstance(x, str)).all()]
+    print(categorical_cols)
+    # [col for col in dframe.columns if dframe[col].apply(lambda x: isinstance(x, str)).all()]
+    
     # Categorical variables: label encoding
     # Initialize a dictionary to store the scalers    
     # if not training set, then use existing scalers
     if(train):
-        categorical_scalers = {column: LabelEncoder() for column in onehot_fields}
+        categorical_scalers = {column: LabelEncoder() for column in categorical_cols}
         # Scale each column and store in the dictionary
         for column, scaler in categorical_scalers.items():
             if(column in dframe.columns):
@@ -98,7 +92,7 @@ def data_scaling(dframe, onehot_fields, categorical_scalers=None, train_scalers=
                 dframe[column] = scaler.transform(dframe[column])
 
     # Continuous variables: scaling
-    continuous_fields = [col for col in dframe.columns if col not in onehot_fields]
+    continuous_fields = [col for col in dframe.columns if col not in categorical_cols]
 
     # Initialize a dictionary to store the scalers      
     # if not training set, then use existing scalers
@@ -120,7 +114,7 @@ def data_scaling(dframe, onehot_fields, categorical_scalers=None, train_scalers=
         return dframe
 
 
-def train_test_valid_split(dframe,stratify_cols='Region',target_cols='Electricity produced by solar panels'):
+def train_test_valid_split(dframe):#,stratify_cols='Region'):
     """
     we choose to split data with validation/test data to be at the end of time series
     Parameters:
@@ -135,8 +129,11 @@ def train_test_valid_split(dframe,stratify_cols='Region',target_cols='Electricit
     """
 
     scalers = {}
+    # categorical_cols = [col for col in dframe.columns if dframe[col].apply(lambda x: isinstance(x, str)).all()]
+    categorical_cols = [col for col in dframe.columns if dframe[col].isin([0, 1]).all() or dframe[col].apply(lambda x: isinstance(x, str)).all()]
+    print(categorical_cols)
 
-    continuous_fields = [col for col in dframe.columns if col not in stratify_cols]
+    continuous_fields = [col for col in dframe.columns if col not in categorical_cols]
 
     # Remove NaNs / duplicates / outliers
     dframe = dframe.dropna().reset_index(drop=True)
@@ -147,7 +144,7 @@ def train_test_valid_split(dframe,stratify_cols='Region',target_cols='Electricit
 
     y = dframe[target_cols].copy()
 
-    strat_df = dframe[stratify_cols].copy()
+    strat_df = dframe[categorical_cols].copy()
 
     dframe.drop(target_cols,axis=1,inplace=True)
 
@@ -155,24 +152,20 @@ def train_test_valid_split(dframe,stratify_cols='Region',target_cols='Electricit
                                                         shuffle=True) # , stratify=strat_df
 
     # train right now is both train and validation set
-    train_X, scalers['X_continuous_scalers'], scalers['X_categorical_scalers'] = data_scaling(train_X, stratify_cols, train=True)
+    train_X, scalers['X_continuous_scalers'], scalers['X_categorical_scalers'] = data_scaling(train_X, train=True)
     # train_Y, scalers['Y_continuous_scalers'], scalers['Y_categorical_scalers'] = data_scaling(train_Y, stratify_cols, train=True, target=True)
 
-    test_X = data_scaling(test_X, stratify_cols, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
+    test_X = data_scaling(test_X, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
     # test_Y = data_scaling(test_Y, stratify_cols, scalers['Y_categorical_scalers'], scalers['Y_continuous_scalers'], target=True)
 
     # strat_df = pd.concat([strat_df.pop(x) for x in stratify_cols], axis=1)
 
-    # print(train_X); print(stratify_cols)
     train_stratify_cols = [item for item in train_X.columns if item in categorical_cols]
     strat_df = train_X[train_stratify_cols].copy()
-    # print(strat_df.info())
 
     train_X, validation_X, train_Y, validation_Y = train_test_split(train_X, train_Y, test_size=None, random_state=42, 
                                                       shuffle=True) #, stratify=strat_df # 0.25 x 0.8 = 0.2
     
-    # train_X = train_X[feature_cols].copy(); train_Y = train_Y[target_cols].copy()
-    # print(train_Y.head(5))
     with open('./models-scalers/service_1_scalers.pkl', 'wb') as f: pickle.dump(scalers, f)
 
     return train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers
@@ -192,36 +185,13 @@ def modelSearch(train_X, train_Y, test_X, test_Y):
       clf = GridSearchCV(estimator=pipe, param_grid=model_params, cv=5, scoring='accuracy', n_jobs=-1)    
       clf.fit(train_X, train_Y) 
 
-      # print(f"Mean performance of each parameter combination based on Cross Validation")
-      # performance = pd.DataFrame(clf.cv_results_['params'])
-      # performance["Score"] = clf.cv_results_['mean_test_score']
-      # print(performance)
-
-      # print("\nBest parameters set found on training set:")
-      # print(clf.best_params_)
-      # params.append(clf.best_params_)
-
-      # print("\nThe scores are computed on the full evaluation set:")
       #evaluate and store scores of estimators of each category on validation set
       score = clf.score(test_X.values, test_Y.values)
       print("Accuracy:", score)
       best_scores.append(score)
 
       with open(f'./models-scalers/{name}.pkl', 'wb+') as f: pickle.dump(clf, f)
-      
-      # pred_Y = clf.predict(test_X)
-      # print(metrics.classification_report(test_Y, pred_Y, digits=5))
-      # confusion_matrices = multilabel_confusion_matrix(test_Y, pred_Y)
-      # for i, cm in enumerate(confusion_matrices):
-      #     print(f"Confusion Matrix for Class \"{target_cols[i]}\":\n {cm}\n")
-          
-      #     # ax, labels, title and ticks
-      #     ax= plt.subplot();
-      #     sns.heatmap(cm, annot=True, fmt='g', ax=ax, cmap=plt.cm.Greens);  #annot=True to annotate cells, ftm='g' to disable scientific notation
-      #     ax.set_xlabel('Predicted labels'); ax.set_ylabel('True labels');  
-      #     ax.set_xticklabels(['No','Yes']); ax.set_yticklabels(['No','Yes'])
-      #     print(f"True Positives: {cm[1,1]}, False Positives: {cm[0,1]}, True Negatives: {cm[0,0]}, False Negatives: {cm[1,0]} \n\n")
-      #     plt.title(target_cols[i]); plt.show()
+    
   return best_scores
 
 ###############################################################################
@@ -231,10 +201,6 @@ def modelSearch(train_X, train_Y, test_X, test_Y):
 def model_evalutate(best_model, best_model_index, best_scores, test_X, test_Y):
 
     with open(f'./models-scalers/{best_model}.pkl', 'rb') as f: clf = pickle.load(f)
-
-    # pipe = Pipeline([(best_model, models[best_model])])
-    # clf = GridSearchCV(estimator=pipe, param_grid=param_grid[best_model_index], cv=5, scoring='accuracy', n_jobs=-1)    
-    # clf.fit(train_X, train_Y) 
 
     print(f"Mean performance of each parameter combination based on Cross Validation")
     performance = pd.DataFrame(clf.cv_results_['params'])
@@ -262,6 +228,8 @@ def model_evalutate(best_model, best_model_index, best_scores, test_X, test_Y):
         ax.set_xticklabels(['No','Yes']); ax.set_yticklabels(['No','Yes'])
         plt.title(target_cols[i]); plt.show()
         print(f"True Positives: {cm[1,1]}, False Positives: {cm[0,1]}, True Negatives: {cm[0,0]}, False Negatives: {cm[1,0]} \n\n")
+        
+        if not os.path.exists("./plots/"): os.makedirs("./plots/")
         plt.savefig(f'./plots/{target_cols[i]}.png', bbox_inches='tight')
         plt.close()
 
@@ -269,19 +237,15 @@ def service_1_model_predict(best_model,service_1_targets,dict):
     with open('./models-scalers/service_1_scalers.pkl', 'rb') as f: scalers = pickle.load(f)
     with open(f'./models-scalers/best_classifier.pkl', 'rb') as f: clf = pickle.load(f)
     
-    print(dict)
     specs = pd.DataFrame.from_dict(dict) 
     
-    # print(specs.head())
-    # print(specs.info())
-    scaled_specs = data_scaling(specs, categorical_cols, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
+    scaled_specs = data_scaling(specs, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
 
     pred_Y = clf.predict(scaled_specs).ravel().tolist()
     
     pred_dict = {service_1_targets[i]: pred_Y[i] for i in range(len(service_1_targets))}
 
-    # print(pred_dict)
-
+    print(pred_dict)
     return pred_dict
 
 def remove_files_by_key_part(directory, final_scores):
@@ -290,15 +254,31 @@ def remove_files_by_key_part(directory, final_scores):
     [print(os.path.join(directory, filename)) for filename in os.listdir(directory) for key in final_scores if key in filename]
     [os.remove(os.path.join(directory, filename)) for filename in os.listdir(directory) for key in final_scores if key in filename]
 
-def forecasting_model():
+@click.command(
+    help= "Given a folder path for CSV files (see load_raw_data), use it to create a model, find\
+            find ideal hyperparameters and train said model to reduce its loss function"
+)
+
+@click.option("--input_filepath", type=str, default='./datasets/EF_comp.csv', help="File containing csv files used by the model")
+@click.option('--feature_cols', type=str, default='Building total area,Reference area,Above ground floors,Underground floor,Initial energy class,Energy consumption before,Energy class after', help='Dataset columns not necesary for training')
+@click.option('--target_cols', type=str, default='Carrying out construction works,Reconstruction of engineering systems,Heat installation,Water heating system', help='Target column that we want to predict (model output)')
+@click.option('--output_dir', type=str, default='./models-scalers/', help='directory to store models and scalers')
+
+def forecasting_model(**kwargs):
     df = pd.read_csv('./datasets/EF_comp.csv')
-    # print(df.info())
 
-    df = df[df.columns[df.columns.isin(feature_cols+target_cols)]]
-    # print(df.info())
+    global feature_cols, target_cols, categorical_cols
+    feature_cols = kwargs['feature_cols'].split(",") #'The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction'
+    target_cols = kwargs['target_cols'].split(",")
+    df = df[feature_cols + target_cols]
 
-    # df = temp_df.copy()
-    train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers = train_test_valid_split(df,categorical_cols,target_cols) 
+    print(df.info())
+    # find categorical columns (string-based) 
+    # categorical_cols = [col for col in df.columns if df[col].apply(lambda x: isinstance(x, str)).all()]
+    categorical_cols = [col for col in df.columns if df[col].isin([0, 1]).all() or df[col].apply(lambda x: isinstance(x, str)).all()]
+    print(categorical_cols)
+
+    train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers = train_test_valid_split(df) 
 
     best_scores = modelSearch(train_X, train_Y, test_X, test_Y)
 
@@ -310,16 +290,15 @@ def forecasting_model():
 
     #make a copy of the best model based on "best model"
     directory = './models-scalers'
+    if not os.path.exists(directory): os.makedirs(directory)
     shutil.copy(f'{directory}/{best_model}.pkl',f"{directory}/best_classifier.pkl")
-
-    # remove_files_by_key_part(directory, final_scores)    
 
     best_model_index = list(models).index(best_model)
     model_evalutate(best_model, best_model_index, best_scores, test_X, test_Y)
 
     dict = [{'Building total area': 351.6, 
             'Reference area': 277.4, 
-            'Above-ground floors': 3, 
+            'Above ground floors': 3, 
             'Underground floor': 0,
             'Initial energy class': 'D',
             'Energy consumption before': 106.04,

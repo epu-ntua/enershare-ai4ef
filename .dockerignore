@@ -1,0 +1,9 @@
+.dockerignore
+lightning_logs
+__pycache__
+.env
+eda
+# models-scalers/
+plots/
+api_template.py
+test.py

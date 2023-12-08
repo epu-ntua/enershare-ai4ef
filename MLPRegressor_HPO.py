@@ -19,8 +19,15 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import mean_absolute_error
+
+from darts import TimeSeries
+from darts.metrics import mape as mape_darts
+from darts.metrics import mase as mase_darts
+from darts.metrics import mae as mae_darts
+from darts.metrics import rmse as rmse_darts
+from darts.metrics import smape as smape_darts
+from darts.metrics import mse as mse_darts
+
 from sklearn.model_selection import train_test_split
 
 from scipy.stats import zscore
@@ -37,11 +44,6 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping
 import logging
 import click
-
-# import mlflow
-# from mlflow import MlflowClient
-# from mlflow.entities import ViewType
-# from mlflow.models.signature import infer_signature
 
 # get environment variables
 from dotenv import load_dotenv
@@ -127,7 +129,7 @@ class Regression(pl.LightningModule):
             layers.append(nn.Linear(int(cur_layer), int(next_layer)))
             layers.append(getattr(nn, self.hparams.activation)()) # nn.activation_function (as suggested by Optuna)
             cur_layer = int(next_layer) #connect cur_layer with previous layer (at first iter, input layer)
-            print(f'({self.hparams.layer_sizes})')
+            # print(f'({self.hparams.layer_sizes})')
 
         return layers, cur_layer
 
@@ -300,8 +302,6 @@ def train_test_valid_split(dframe,statify_cols='Region',target_col='Electricity 
 
     y = dframe[target_col].copy()
 
-    # y = dframe.pop(target_col)
-
     strat_df = dframe[statify_cols].copy()
     dframe.drop(target_col,axis=1,inplace=True)
     
@@ -334,30 +334,41 @@ def cross_plot_actual_pred(plot_pred, plot_actual):
     fig, ax = plt.subplots(figsize=(16,4))
     ax.plot(plot_pred, label='Prediction')
     ax.plot(plot_actual, label='Data')
-    # ax.set_xticks(np.arange(len(datesx))[12::24])
     ax.legend()
     plt.show()
+    if not os.path.exists("./plots/"): os.makedirs("./plots/")
+    plt.savefig('./plots/pred_actual.png')
 
-def calculate_metrics(actual,pred,target_col,scaled_features):
 
-    mean = scaled_features[target_col][0]
-    std = scaled_features[target_col][1]
-    # Get predicted/actual points (scaled back to their original size)
-    plot_pred = [x * std + mean for x in pred]
-    plot_actual = [x * std + mean for x in actual]
+def calculate_mape(actual, predicted):
+    return np.mean(np.abs((np.array(actual) - np.array(predicted)) / np.array(actual))) * 100 if actual else 0
+
+def calculate_metrics(test_X, test_Y, output_dir):
+
+    model = Regression.load_from_checkpoint(checkpoint_path=f'{output_dir}/best_regressor.ckpt')
+
+    with open(f'{output_dir}/service_2_scalers.pkl', 'rb') as f: scalers = pickle.load(f)
+
+    test_X_tensor = torch.tensor(test_X.values.astype(np.float32))
+    
+    pred_Y = model(test_X_tensor).detach().numpy() #create and convert output tensor to numpy array
+
+    pred_series = TimeSeries.from_values(pred_Y)
+    actual_series = TimeSeries.from_values(test_Y)
 
     # Evaluate the model prediction
     metrics = {
-        "MAE": mean_absolute_error(plot_actual,plot_pred),
-        "MSE": mean_squared_error(plot_actual,plot_pred),
-        "RMSE": np.sqrt(mean_squared_error(plot_actual,plot_pred))
+        "SMAPE": smape_darts(actual_series,pred_series),
+        "MAE": mae_darts(actual_series,pred_series),
+        "MSE": mse_darts(actual_series,pred_series),
+        "RMSE": rmse_darts(actual_series,pred_series)
     }
     
     print("  Metrics: ")
     for key, value in metrics.items():
         print("    {}: {}".format(key, value))
 
-    cross_plot_actual_pred(plot_pred, plot_actual)
+    cross_plot_actual_pred(test_Y, pred_Y)
     
     return metrics
 
@@ -394,10 +405,6 @@ def objective(trial,kwargs,df):
         'num_workers': int(kwargs['num_workers'])
     }
 
-    # if single item in categorical variables, turn it to a list
-    # if isinstance(kwargs['optimizer_name'], str): params['optimizer_name'] = [kwargs['optimizer_name']] 
-    # if isinstance(kwargs['activation'], str): params['activation'] = [kwargs['activation']]
-
     print(params)
     
     # ~~~~~~~~~~~~~~ Setting up network ~~~~~~~~~~~~~~~~~~~~~~
@@ -407,9 +414,9 @@ def objective(trial,kwargs,df):
     model = Regression(**params) # double asterisk (dictionary unpacking)
 
     trainer = Trainer(max_epochs=int(params['max_epochs']), deterministic=True,
-                    #   accelerator='auto', 
+                      accelerator='auto', 
                     #   devices = 1 if torch.cuda.is_available() else 0,
-                    auto_select_gpus=True if torch.cuda.is_available() else False,
+                    # auto_select_gpus=True if torch.cuda.is_available() else False,
                     callbacks=[PyTorchLightningPruningCallback(trial, monitor="val_loss"),
                                EarlyStopping(monitor="val_loss", mode="min", verbose=True)]) 
 
@@ -557,7 +564,7 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
         service_2_targets = np.append(service_2_targets,'CO2 emissions reduction')
          
     pred_dict = {service_2_targets[i]: pred[i] for i in range(len(service_2_targets))}
-    print(pred_dict)
+    # print(pred_dict)
     
     return pred_dict
 
@@ -567,9 +574,9 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
             find ideal hyperparameters and train said model to reduce its loss function"
 )
 
-@click.option("--filepath", type=str, default='./datasets/Sol_pan_comp.csv', help="File containing csv files used by the model")
+@click.option("--input_filepath", type=str, default='./datasets/Sol_pan_comp.csv', help="File containing csv files used by the model")
 @click.option("--seed", type=int, default=42, help='seed used to set random state to the model')
-@click.option("--max_epochs", type=int, default=20, help='range of number of epochs used by the model')
+@click.option("--max_epochs", type=int, default=3, help='range of number of epochs used by the model')
 @click.option("--n_layers", type=str, default='2,6', help='range of number of layers used by the model')
 @click.option("--layer_sizes", type=str, default="128,256,512,1024,2048", help='range of size of each layer used by the model')
 @click.option("--l_rate", type=str, default='0.0001,0.001', help='range of learning rate used by the model')
@@ -577,13 +584,13 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
 @click.option("--optimizer_name", type=str, default="Adam", help='optimizers experimented by the model') # SGD
 @click.option("--batch_size", type=str, default='256,512,1024', help='possible batch sizes used by the model') #16,32,
 @click.option("--num_workers", type=int, default=2, help='accelerator (cpu/gpu) processesors and threads used') 
-@click.option('--n_trials', type=int, default=2, help='number of trials for HPO')
+@click.option('--n_trials', type=int, default=3, help='number of trials for HPO')
 @click.option('--preprocess', type=int, default=1, help='data preprocessing and scaling')
-@click.option('--needed_cols', type=str, default='Region,Electricity consumption of the grid,Primary energy consumption before,Current inverter set power,Inverter power in project', help='Dataset columns not necesary for training')
+@click.option('--feature_cols', type=str, default='Region,Electricity consumption of the grid,Primary energy consumption before,Current inverter set power,Inverter power in project', help='Dataset columns not necesary for training')
 @click.option('--target_col', type=str, default='Electricity produced by solar panels', help='Target column that we want to predict (model output)')
-@click.option('--categorical_cols', type=str, default='Region', help='columns containing categorical data')
 @click.option('--predict', type=int, default=0, help='predict value or not')
-@click.option('--filename', type=str, default='./models-scalers/best_regressor.ckpt', help='filename of best model')
+@click.option('--output_dir', type=str, default='./models-scalers/', help='directory to store models and scalers')
+# @click.option('--filename', type=str, default='./models-scalers/best_regressor.ckpt', help='filename of best model')
 
 def forecasting_model(**kwargs):
     """
@@ -596,45 +603,44 @@ def forecasting_model(**kwargs):
         kwargs: dictionary containing click paramters used by the script
     Returns: None 
     """
-    # with mlflow.start_run(run_name="train",nested=True) as train_start:
-
-        # Auto log all MLflow entities
-        # mlflow.pytorch.autolog()
 
     if not os.path.exists("./temp_files/"): os.makedirs("./temp_files/")
     # store mlflow metrics/artifacts on temp file
     with tempfile.TemporaryDirectory(dir='./temp_files/') as tmpdir: 
         # ~~~~~~~~~~~~ Data Collection & process ~~~~~~~~~~~~~~~~~~~~
         print("############################ Reading Data ###############################")
-        df = pd.read_csv(kwargs['filepath']) #,index_col=0
+        df = pd.read_csv(kwargs['input_filepath']) #,index_col=0
         df_backup = df.copy()
 
         print("############################ Data Preprocess ###############################")
         # Remove date column (not needed)
-        needed_cols = kwargs['needed_cols'].split(",") #'The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction'
+        feature_cols = kwargs['feature_cols'].split(",") #'The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction'
         target_col = kwargs['target_col']
-        categorical_cols = kwargs['categorical_cols'].split(",") 
+        df = df[feature_cols + [target_col]]
 
-        df = df[needed_cols + [target_col]]
+        # find categorical columns (string-based) 
+        categorical_cols = [col for col in df.columns if df[col].apply(lambda x: isinstance(x, str)).all()]
 
         global train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers
         train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers = train_test_valid_split(df,categorical_cols,target_col)
 
         if(kwargs['predict']):
-            print(kwargs['filename'])
-            service_2_model_predict(test_X, target_col, categorical_cols, kwargs['filename'])
+            service_2_model_predict(test_X, target_col, categorical_cols, f'{kwargs["output_dir"]}/best_regressor.ckpt')
             return
-                
         study = optuna_optimize(kwargs,df)
         
         # visualize results of study
         optuna_visualize(study, tmpdir)
 
-        print(f'Save best model at file: \"{kwargs["filename"]}\"')
+        if not os.path.exists(kwargs["output_dir"]): os.makedirs(kwargs["output_dir"])
+
+        print(f'Save best model at file: \"{kwargs["output_dir"]}/best_regressor.ckpt\"')
         best_model = study.user_attrs["best_trainer"]
-        best_model.save_checkpoint(kwargs['filename'])
+        best_model.save_checkpoint(f'{kwargs["output_dir"]}/best_regressor.ckpt')
         print(f'Save data scalers at files: \"categorical_scalers\" and \"train_scalers\"')
-        with open('./models-scalers/service_2_scalers.pkl', 'wb') as f: pickle.dump(scalers, f)
+        with open(f'{kwargs["output_dir"]}/service_2_scalers.pkl', 'wb') as f: pickle.dump(scalers, f)
+        
+        calculate_metrics(test_X, test_Y, f'{kwargs["output_dir"]}')
         
         #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Store to Mlflow ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         #store trained model to mlflow with input singature

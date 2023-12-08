@@ -29,6 +29,7 @@ Data must:
 * contain the columns registered either by the user-provided values or default values of the commnand-line arguments (see service 2 for more details)
   
 Please fill command line arguments refering to columns of the dataset provided, otherwise the code will **not** function properly
+Services use python's [click](https://click.palletsprojects.com/en/8.1.x/api/) to edit parameters using command line arguments. Please refer to each service's documentation for further details.
 
 ## Usage
 
@@ -46,28 +47,31 @@ Service 1 classification provides cross-validation grid search among many models
 | MLP            | {'hidden_layer_sizes': [150, 100, 50], 'activation': ['relu', 'logistic', 'tanh'], 'solver': ['adam', 'lbfgs', 'sgd']}|
 | XGBoost        | {'learning_rate': [0.1, 0.2, 0.3], 'max_depth': [1, 2, 3, 4, 5, 6], 'min_child_weight': [1, 2], 'subsample': [1.0, 0.5, 0.1], 'n_estimators': [200, 600]}|
 
-Currently classsifier does not support custom command line arguments as features as their hardcoded in the code
+#### Command-line arguments
 
-|   Feature Columns     |         Categorical Columns           |           Target Columns              |
-|:---------------------:|:-------------------------------------:|:-------------------------------------:|
-| Building total area   | Above-ground floors                   | Carrying out construction works       |
-|   Reference area      |  Underground floor                    | Reconstruction of engineering systems |
-| Above-ground floors   | Carrying out construction works       |     Heat installation                 |
-|  Underground floor    | Reconstruction of engineering systems |   Water heating system                |
-| Energy consumption before |   Heat installation               |          -                            |
-|  Initial energy class |   Water heating system                |          -                            |
-|  Energy class after   |   Initial energy class                |          -                            |
-|           -           |   Energy class after                  |          -                            |
+|   Parameters   | Type |        Default Value       |                           Description                           |
+|:--------------:|:----:|:--------------------------:|:---------------------------------------------------------------:|
+| input_filepath |  str |    './EF_comp.csv'         |        Folder path containing csv files used by the model       |
+|   feature_cols |  str |              -             |       Dataset columns necesary for training                     |
+|   target_cols  |  str |              -             |       Target column that we want to predict (model output)      |
+|   output_dir   |  str |     './models-scalers/'    |            local directory path to store models/scalers         |
 
+**Example:** 
+```bash
+python classifier.py --input_filepath './EF_comp.csv' --feature_cols Building total area,Reference area,Above ground floors,Underground floor,Initial energy class,Energy consumption before,Energy class after
+                     --target_cols Carrying out construction works,Reconstruction of engineering systems,Heat installation,Water heating system
+                     --output_dir ./models-scalers/ 
+```
 
 ### Service 2 (Regressor)
 
 Service 2 regression provides hyperparameter tuning on our MLP architecture to determine the right combination of hyperparameter values:
 
+#### Command-line arguments
+
 |   Parameters   | Type |        Default Value       |                           Description                           |
 |:--------------:|:----:|:--------------------------:|:---------------------------------------------------------------:|
-|     dir_in     |  str | './Sol_pan_comp.csv'       |        Folder path containing csv files used by the model       |
-|    local_tz    | bool |            False           |      flag if you want local (True) or UTC (False) timezone      |
+| input_filepath |  str |    './Sol_pan_comp.csv'    |        Folder path containing csv files used by the model       |
 |      seed      |  str |            '42'            |            seed used to set random state to the model           |
 |    n_trials    |  int |             '2'            |        number of trials - different tuning oh hyperparams       |
 |   max_epochs   |  str |             '3'            |           range of number of epochs used by the model           |
@@ -76,13 +80,12 @@ Service 2 regression provides hyperparameter tuning on our MLP architecture to d
 |   activation   |  str |           'ReLU'           |        activation functions experimented on by the model        |
 | optimizer_name |  str |           'Adam'           |             optimizers experimented on by the model             |
 |   batch_size   |  str |           '1024'           |             batch sizes experimented on by the model            |
+|   n_trials     |  int |             50             |                     number of trials for HPO                    |
 |   num_workers  |  str |             '2'            |       accelerator (cpu/gpu) processesors and threads used       |
 |   preprocess   |  int |             '1'            |       boolean if data require preprocessing and scaling         |
-|   needed_cols  |  str |              -             |       Dataset columns necesary for training                     |
+|   feature_cols |  str |              -             |       Dataset columns necesary for training                     |
 |   target_cols  |  str |              -             |       Target column that we want to predict (model output)      |
-|   categorical_cols  |  str |         -             |            Columns containing categorical data                  |
-
-Service 2 uses python's [click](https://click.palletsprojects.com/en/8.1.x/api/) to edit these parameter using command line arguments. Please refer to their documentation for further details.
+|   output_dir   |  str |     './models-scalers/'    |            local directory path to store models/scalers         |
 
 **Example:** 
 ```bash

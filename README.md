@@ -58,7 +58,7 @@ Service 1 classification provides cross-validation grid search among many models
 
 **Example:** 
 ```bash
-python classifier.py --input_filepath './EF_comp.csv' --feature_cols Building total area,Reference area,Above ground floors,Underground floor,Initial energy class,Energy consumption before,Energy class after
+python classifier.py --input_filepath ./EF_comp.csv --feature_cols Building total area,Reference area,Above ground floors,Underground floor,Initial energy class,Energy consumption before,Energy class after
                      --target_cols Carrying out construction works,Reconstruction of engineering systems,Heat installation,Water heating system
                      --output_dir ./models-scalers/ 
 ```

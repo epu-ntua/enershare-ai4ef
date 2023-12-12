@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enershare AI4EF API</title>
+    <!-- Include Redocly script -->
+    <script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"></script>
+</head>
+<body>
+    <!-- Specify where to render the documentation -->
+    <div id="redoc-container"></div>
+    <script>
+        // Load and render the OpenAPI specification
+        Redocly.init('ai4ef_service.json', {
+            // Options, if needed
+        }, document.getElementById('redoc-container'));
+    </script>
+</body>
+</html>
+
+<!-- HTML for static distribution bundle build -->
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Swagger UI</title>
+    <link rel="stylesheet" type="text/css" href="dist/swagger-ui.css" />
+    <link rel="stylesheet" type="text/css" href="dist/index.css" />
+    <link rel="icon" type="image/png" href="dist/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="dist/favicon-16x16.png" sizes="16x16" />
+  </head>
+
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="dist/swagger-ui-bundle.js" charset="UTF-8"> </script>
+    <script src="dist/swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
+    <script src="dist/swagger-initializer.js" charset="UTF-8"> </script>
+  </body>
+</html> -->

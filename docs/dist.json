@@ -73,7 +73,23 @@ paths:
           description: Successful Response
           content:
             application/json:
-              example: null  # Return null on success
+              example:
+                - title: "Carrying out construction works"
+                  description: "Carrying out construction works in the enclosing structures during the project (to increase the energy efficiency of the house)."
+                  id: "1"
+                  value: "True"
+                - title: "Reconstruction of engineering systems"
+                  description: "Reconstruction of engineering systems (ventilation, recuperation) to increase the energy efficiency of the house (during the project)."
+                  id: "2"
+                  value: "True"
+                - title: "Water heating system"
+                  description: "Installation of a new water heating system (during the project)."
+                  id: "3"
+                  value: "False"
+                - title: "Heat installation"
+                  description: "Installation of heat installations to ensure the production of heat from renewable energy sources."
+                  id: "4"
+                  value: "False"
         '422':
           description: Validation Error
           content:
@@ -134,7 +150,27 @@ paths:
           description: Successful Response
           content:
             application/json:
-              example: null  # Return null on success
+              example:
+                - title: "Electricity produced by solar panels"
+                  description: "The amount of electricity produced by the solar panels, which are installed in the project."
+                  id: "5"
+                  unit: "[MWh per year]"
+                  value: "6.14"
+                - title: "Primary energy consumption after (KW)"
+                  description: "Primary energy consumption after installing the solar panel system."
+                  id: "6"
+                  unit: "[MWh per year]"
+                  value: "2.42"
+                - title: "Reduction of primary energy consumption"
+                  description: "Reduction of primary energy consumption: Difference between primary energy consumption before and after."
+                  id: "7"
+                  unit: "[MWh per year]"
+                  value: "9.21"
+                - title: "CO2 emissions reduction"
+                  description: "The amount of CO2 emissions reduction in the project."
+                  id: "8"
+                  unit: "[tons of CO2 per year]"
+                  value: "0.67"
         '422':
           description: Validation Error
           content:

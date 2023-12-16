@@ -1,0 +1,179 @@
+openapi: 3.1.0
+info:
+  title: Enershare AI4EF API
+  description: Collection of REST APIs for Serving Execution of Enershare AI4EF Service
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  version: 0.0.1
+tags:
+  - name: Service 1
+    description: REST APIs for service 1
+  - name: Service 2
+    description: REST APIs for service 2
+paths:
+  /service_1/inference:
+    post:
+      tags:
+        - Service 1
+      summary: Get Building Parameters Service 1
+      operationId: get_building_parameters_service_1_service_1_inference_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              building_total_area: 351.6
+              reference_area: 277.4
+              above_ground_floors: 3
+              underground_floor: 0
+              initial_energy_class: "D"
+              energy_consumption_before: 106.04
+              energy_class_after: "B"
+            schema:
+              type: object
+              properties:
+                building_total_area:
+                  type: number
+                  description: Building's total area
+                  example: 351.6
+                  required: true
+                reference_area:
+                  type: number
+                  description: Reference area
+                  example: 277.4
+                  required: true
+                above_ground_floors:
+                  type: integer
+                  description: Number of above-ground floors
+                  example: 3
+                  required: true
+                underground_floor:
+                  type: integer
+                  description: Number of underground floors
+                  example: 0
+                  required: true
+                initial_energy_class:
+                  type: string
+                  description: Initial energy class
+                  example: "A"
+                  required: true
+                energy_consumption_before:
+                  type: number
+                  description: Energy consumption before
+                  example: 106.04
+                  required: true
+                energy_class_after:
+                  type: string
+                  description: Energy class after
+                  example: "B"
+                  required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              example: null  # Return null on success
+        '422':
+          description: Validation Error
+          content:
+            application/json:              
+              example: null  # Return null on validation error
+        '4XX':
+          description: Client Error
+          content:
+            application/json:
+              example: null  # Return null on client error
+
+  /service_2/inference:
+    post:
+      tags:
+        - Service 2
+      summary: Get Building Parameters Service 2
+      operationId: get_building_parameters_service_2_service_2_inference_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              region: "Rīga"
+              electricity_consumption_of_the_grid: 4.65
+              primary_energy_consumption_before: 11.63
+              current_inverter_set_power: 0.0
+              inverter_power_in_project: 10
+            schema:
+              type: object
+              properties:
+                region:
+                  type: string
+                  description: Region
+                  example: "Rīga"
+                  required: true
+                electricity_consumption_of_the_grid:
+                  type: number
+                  description: Electricity consumption of the grid
+                  example: 4.65
+                  required: true
+                primary_energy_consumption_before:
+                  type: number
+                  description: Primary energy consumption before
+                  example: 11.63
+                  required: true
+                current_inverter_set_power:
+                  type: number
+                  description: Current inverter set power
+                  example: 0.0
+                  required: true
+                inverter_power_in_project:
+                  type: integer
+                  description: Inverter power in the project
+                  example: 10
+                  required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              example: null  # Return null on success
+        '422':
+          description: Validation Error
+          content:
+            application/json:              
+                example: null  # Return null on validation error
+        '4XX':
+          description: Client Error
+          content:
+            application/json:
+              example: null  # Return null on client error
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError

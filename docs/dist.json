@@ -94,7 +94,11 @@ paths:
           description: Validation Error
           content:
             application/json:              
-              example: null  # Return null on validation error
+                example:
+                  detail:
+                    - loc: ["string"]
+                      msg: "string"
+                      type: "string"
         '4XX':
           description: Client Error
           content:
@@ -175,7 +179,11 @@ paths:
           description: Validation Error
           content:
             application/json:              
-                example: null  # Return null on validation error
+                example:
+                  detail:
+                    - loc: ["string"]
+                      msg: "string"
+                      type: "string"
         '4XX':
           description: Client Error
           content:

@@ -61,48 +61,7 @@ paths:
             type: array
         '206':
           description: Partial Content
-    post:
-      tags:
-      - solpancomp
-      parameters:
-      - "$ref": "#/parameters/body.solpancomp"
-      - "$ref": "#/parameters/select"
-      - "$ref": "#/parameters/preferPost"
-      responses:
-        '201':
-          description: Created
-    delete:
-      tags:
-      - solpancomp
-      parameters:
-      - "$ref": "#/parameters/rowFilter.solpancomp.Region"
-      - "$ref": "#/parameters/rowFilter.solpancomp.Electricity consumption of the
-          grid"
-      - "$ref": "#/parameters/rowFilter.solpancomp.Primary energy consumption before"
-      - "$ref": "#/parameters/rowFilter.solpancomp.Current inverter set power"
-      - "$ref": "#/parameters/rowFilter.solpancomp.Inverter power in project"
-      - "$ref": "#/parameters/rowFilter.solpancomp.Electricity produced by solar panels"
-      - "$ref": "#/parameters/preferReturn"
-      responses:
-        '204':
-          description: No Content
-    patch:
-      tags:
-      - solpancomp
-      parameters:
-      - "$ref": "#/parameters/rowFilter.solpancomp.Region"
-      - "$ref": "#/parameters/rowFilter.solpancomp.Electricity consumption of the
-          grid"
-      - "$ref": "#/parameters/rowFilter.solpancomp.Primary energy consumption before"
-      - "$ref": "#/parameters/rowFilter.solpancomp.Current inverter set power"
-      - "$ref": "#/parameters/rowFilter.solpancomp.Inverter power in project"
-      - "$ref": "#/parameters/rowFilter.solpancomp.Electricity produced by solar panels"
-      - "$ref": "#/parameters/body.solpancomp"
-      - "$ref": "#/parameters/preferReturn"
-      responses:
-        '204':
-          description: No Content
-  "/efcomp":
+    "/efcomp":
     get:
       tags:
       - efcomp
@@ -134,55 +93,7 @@ paths:
             type: array
         '206':
           description: Partial Content
-    post:
-      tags:
-      - efcomp
-      parameters:
-      - "$ref": "#/parameters/body.efcomp"
-      - "$ref": "#/parameters/select"
-      - "$ref": "#/parameters/preferPost"
-      responses:
-        '201':
-          description: Created
-    delete:
-      tags:
-      - efcomp
-      parameters:
-      - "$ref": "#/parameters/rowFilter.efcomp.Building total area"
-      - "$ref": "#/parameters/rowFilter.efcomp.Reference area"
-      - "$ref": "#/parameters/rowFilter.efcomp.Above ground floors"
-      - "$ref": "#/parameters/rowFilter.efcomp.Underground floor"
-      - "$ref": "#/parameters/rowFilter.efcomp.Initial energy class"
-      - "$ref": "#/parameters/rowFilter.efcomp.Energy consumption before"
-      - "$ref": "#/parameters/rowFilter.efcomp.Energy class after"
-      - "$ref": "#/parameters/rowFilter.efcomp.Carrying out construction works"
-      - "$ref": "#/parameters/rowFilter.efcomp.Reconstruction of engineering systems"
-      - "$ref": "#/parameters/rowFilter.efcomp.Heat installation"
-      - "$ref": "#/parameters/rowFilter.efcomp.Water heating system"
-      - "$ref": "#/parameters/preferReturn"
-      responses:
-        '204':
-          description: No Content
-    patch:
-      tags:
-      - efcomp
-      parameters:
-      - "$ref": "#/parameters/rowFilter.efcomp.Building total area"
-      - "$ref": "#/parameters/rowFilter.efcomp.Reference area"
-      - "$ref": "#/parameters/rowFilter.efcomp.Above ground floors"
-      - "$ref": "#/parameters/rowFilter.efcomp.Underground floor"
-      - "$ref": "#/parameters/rowFilter.efcomp.Initial energy class"
-      - "$ref": "#/parameters/rowFilter.efcomp.Energy consumption before"
-      - "$ref": "#/parameters/rowFilter.efcomp.Energy class after"
-      - "$ref": "#/parameters/rowFilter.efcomp.Carrying out construction works"
-      - "$ref": "#/parameters/rowFilter.efcomp.Reconstruction of engineering systems"
-      - "$ref": "#/parameters/rowFilter.efcomp.Heat installation"
-      - "$ref": "#/parameters/rowFilter.efcomp.Water heating system"
-      - "$ref": "#/parameters/body.efcomp"
-      - "$ref": "#/parameters/preferReturn"
-      responses:
-        '204':
-          description: No Content
+    
 definitions:
   solpancomp:
     properties:

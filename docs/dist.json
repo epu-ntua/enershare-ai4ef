@@ -760,7 +760,7 @@ x-tagGroups:
   - name: Root 
     tags:
       - Introspection
-  - name: postgREST
+  - name: data sharing
     tags:
       - solpancomp
       - efcomp

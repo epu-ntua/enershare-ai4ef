@@ -757,8 +757,8 @@ components:
             $ref: '#/components/schemas/efcomp'
       required: false
 x-tagGroups:
-   - name: Introspection
-     tags: 
+  - name: Introspection
+    tags: 
       - Introspection 
   - name: postgREST
     tags:

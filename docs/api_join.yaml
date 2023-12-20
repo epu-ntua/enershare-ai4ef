@@ -758,9 +758,10 @@ components:
       required: false
 x-tagGroups:
   - name: Root 
-  - name: postgREST
     tags:
       - Introspection
+  - name: postgREST
+    tags:
       - solpancomp
       - efcomp
   - name: services

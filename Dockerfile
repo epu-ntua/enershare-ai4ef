@@ -18,4 +18,4 @@ EXPOSE 8888
 # ENV NAME World
 
 # Run api.py when the container launches
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8888","--reload"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8888"]

@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
+import httpx
 import uvicorn
 # import httpx
 from enum import Enum
@@ -51,21 +53,25 @@ def convert_to_boolean(value):
     else:
         return value
 
+
 @app.post("/service_1/inference", tags=["Service 1"])
 async def get_building_parameters_service_1(parameters: dict):
     prediction = None
         
-    {"building_total_area": 351.6, 
-        "reference_area": 277.4, 
-        "above_ground_floors": 3, 
-        "underground_floor": 0,
-        "initial_energy_class": "D",
-        "energy_consumption_before": 106.04,
-        "energy_class_after": "B"}
+    # {"building_total_area": 351.6, 
+    #     "reference_area": 277.4, 
+    #     "above_ground_floors": 3, 
+    #     "underground_floor": 0,
+    #     "initial_energy_class": "D",
+    #     "energy_consumption_before": 106.04,
+    #     "energy_class_after": "B"}
     #
     # replace "_" with "-" said dictionary key
     # parameters['above-ground_floors'] = parameters.pop('above_ground_floors')
     # parameters['initial_energy_class '] = parameters.pop('initial_energy_class')
+    feature_list = ["building_total_area","reference_area","above_ground_floors","underground_floor",
+                    "initial_energy_class","energy_consumption_before","energy_class_after"]
+    parameters = {key: parameters[key] for key in feature_list}
 
     # replace "_" with white spaces for all dictionary keys
     parameters = {key.replace("_", " "): value for key, value in parameters.items()}
@@ -74,6 +80,8 @@ async def get_building_parameters_service_1(parameters: dict):
     # capitalize each letter after "_" in first key of dict (Reference Total Area) because the dataset does not have consistent capitalization
     # parameters = {'Building Total Area' if key == 'Building total area' else key: value for key, value in parameters.items()}
     parameters = [parameters]
+
+
 
     best_model = 'best_classifier.pkl'
     # prediction = {'prediction':'Service 1'}
@@ -210,7 +218,7 @@ async def get_gpu_usage():
 
 @app.get("/")
 async def root():
-    return {"message": "Congratulations! Your API is working as expected. Now head over to http://localhost:8080/docs"}
+    return {"message": "Congratulations! Your API is working as expected. Now head over to http://localhost:8888/docs"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8888, reload=True)

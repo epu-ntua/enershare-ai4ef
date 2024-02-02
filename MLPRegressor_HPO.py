@@ -552,7 +552,7 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
         PECA = float(pred) + PECB - real_pred 
 
         pred = np.append(pred,PECA) # Primary energy consumption after (KW)
-        service_2_targets = np.append(service_2_targets,'Primary energy consumption after (KW)')
+        service_2_targets = np.append(service_2_targets,'Primary energy consumption after')
 
         PECR = PECB - PECA  #Reduction of primary energy consumption
         pred = np.append(pred,PECR)

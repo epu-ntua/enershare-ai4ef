@@ -53,6 +53,10 @@ def convert_to_boolean(value):
     else:
         return value
 
+def replace_key_name(original_dict, key_to_replace, new_key):
+    new_dict = {new_key if key == key_to_replace else key: value for key, value in original_dict.items()}
+    
+    return new_dict
 
 @app.post("/service_1/inference", tags=["Service 1"])
 async def get_building_parameters_service_1(parameters: dict):
@@ -80,8 +84,6 @@ async def get_building_parameters_service_1(parameters: dict):
     # capitalize each letter after "_" in first key of dict (Reference Total Area) because the dataset does not have consistent capitalization
     # parameters = {'Building Total Area' if key == 'Building total area' else key: value for key, value in parameters.items()}
     parameters = [parameters]
-
-
 
     best_model = 'best_classifier.pkl'
     # prediction = {'prediction':'Service 1'}
@@ -126,15 +128,33 @@ async def get_building_parameters_service_2(parameters: dict):
     #         "current_inverter_set_power": 0.0, 
     #         "inverter_power_in_project": 10}
 
+    # { "region": "Rīga", 
+    #             "average_monthly_electricity_consumption_before": 4.65, 
+    #             "current_inverter_set_power": 0.0, 
+    #             "planned_inverter_set_power": 10}
+
+    # rename "planned_inverter_set_power" to "inverter_power_in_project" as in the csv file
+    parameters = replace_key_name(parameters, "planned_inverter_set_power","inverter_power_in_project")
+    # parameters['inverter_power_in_project'] = parameters.pop('planned_inverter_set_power')
+
+    # rename "current_electricity_consumption_before" to "electricity_consumption_of_the_grid" as in the csv file
+    parameters = replace_key_name(parameters, "average_monthly_electricity_consumption_before", "electricity_consumption_of_the_grid")
+    # parameters['electricity_consumption_of_the_grid'] = parameters.pop('average_monthly_electricity_consumption_before')
+
+    # Input is given in kwh, but our data are in mwh (division by 1000)
+    # to create a yearly average (12 months), we multiply by 12 
+    parameters["electricity_consumption_of_the_grid"] *= 0.012 # 12 / 1000 
+
     # replace "_" with white spaces for all dictionary keys
-    # parameters['primary_energy_consumption_before '] = parameters.pop('primary_energy_consumption_before')#
     parameters = {key.replace("_", " "): value for key, value in parameters.items()}
+    # parameters['primary_energy_consumption_before '] = parameters.pop('primary_energy_consumption_before')#
 
     # remove suffix space between 
     # Convert all keys to lowercase
     parameters = {key.capitalize(): value for key, value in parameters.items()}
-    parameters = [parameters]
 
+    parameters = [parameters]
+    
     filename='./models-scalers/best_regressor.ckpt'
     categorical_cols='Region'
     prediction = service_2_model_predict(parameters, service_2_targets, categorical_cols, filename)

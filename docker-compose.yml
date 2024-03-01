@@ -1,7 +1,7 @@
 version: '3'
 services:
   leif:
-      container_name: leif-service
+      container_name: leif-backend-service
       restart: always
       image: python:3.10
       ports:
@@ -14,26 +14,34 @@ services:
         # uvicorn api:app --host 0.0.0.0 --port 8888 --reload
 
   server:
+    container_name: leif-postgrest-service
     image: postgrest/postgrest
+    restart: always
     ports:
-      - "3000:3000"
+      - "8886:3000"
     environment:
       PGRST_DB_URI: postgresql://read_only_role:read123@enershare.epu.ntua.gr:5556/postgres
       PGRST_DB_SCHEMA: leif
       PGRST_DB_ANON_ROLE: read_only_role #In production this role should not be the same as the one used for the connection
-      PGRST_SERVER_PROXY_URI: "http://enershare.epu.ntua.gr:3000"
-      PGRST_OPENAPI_SERVER_PROXY_URI: "http://enershare.epu.ntua.gr:3000"
+      PGRST_SERVER_PROXY_URI: "http://enershare.epu.ntua.gr:8886"
+      PGRST_OPENAPI_SERVER_PROXY_URI: "http://enershare.epu.ntua.gr:8886"
     networks:
       - my_network 
 
   swagger:
+    container_name: leif-postgrest-swagger-service
     image: swaggerapi/swagger-ui:latest
+    restart: always
     ports:
-        - "8080:8080"
+        - "8887:8080"
     expose:
         - "8080"
+    volumes:
+      - ./openapi-ro.json:/usr/share/nginx/html/openapi-ro.json:ro # ro = readOnly
     environment:
-        API_URL: http://enershare.epu.ntua.gr:3000/      
+        API_URL: ./openapi-ro.json      
+    # environment:
+        # API_URL: http://enershare.epu.ntua.gr:8886/      
   
 networks:
   my_network:

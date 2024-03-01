@@ -37,9 +37,9 @@ services:
     expose:
         - "8080"
     volumes:
-      - ./openapi-ro.yaml:/usr/share/nginx/html/openapi-ro.yaml:ro # ro = readOnly
+      - ./postgrest-openapi-ro.yaml:/usr/share/nginx/html/postgrest-openapi-ro.yaml:ro # ro = readOnly
     environment:
-        API_URL: ./openapi-ro.yaml      
+        API_URL: ./postgrest-openapi-ro.yaml      
     # environment:
         # API_URL: http://enershare.epu.ntua.gr:8886/      
   

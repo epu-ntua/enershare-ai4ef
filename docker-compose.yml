@@ -15,7 +15,7 @@ services:
 
   server:
     container_name: leif-postgrest-service
-    image: ai4ef-postgrest/postgrest
+    image: postgrest/postgrest
     restart: always
     ports:
       - "8886:3000"
@@ -30,7 +30,7 @@ services:
 
   swagger:
     container_name: leif-postgrest-swagger-service
-    image: ai4ef-swaggerapi/swagger-ui:latest
+    image: swaggerapi/swagger-ui:latest
     restart: always
     ports:
         - "8887:8080"

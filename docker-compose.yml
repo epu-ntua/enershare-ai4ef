@@ -3,7 +3,7 @@ services:
   leif:
       container_name: leif-backend-service
       restart: always
-      image: python:3.10
+      image: ai4ef-fastapi
       ports:
         - "8888:8888"
       build: .
@@ -15,7 +15,7 @@ services:
 
   server:
     container_name: leif-postgrest-service
-    image: postgrest/postgrest
+    image: ai4ef-postgrest/postgrest
     restart: always
     ports:
       - "8886:3000"
@@ -30,14 +30,18 @@ services:
 
   swagger:
     container_name: leif-postgrest-swagger-service
-    image: swaggerapi/swagger-ui:latest
+    image: ai4ef-swaggerapi/swagger-ui:latest
     restart: always
     ports:
         - "8887:8080"
     expose:
         - "8080"
+    volumes:
+      - ./postgrest-openapi-ro.yaml:/usr/share/nginx/html/postgrest-openapi-ro.yaml:ro # ro = readOnly
     environment:
-        API_URL: http://enershare.epu.ntua.gr:8886/      
+        API_URL: ./postgrest-openapi-ro.yaml
+    # environment:
+        # API_URL: http://enershare.epu.ntua.gr:8886/      
   
 networks:
   my_network:

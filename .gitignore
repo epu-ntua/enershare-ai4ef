@@ -1,0 +1,12 @@
+/datasets/
+/plots/
+/misc/
+/models-scalers/
+/optuna_viz/
+**/lightning_logs/
+**/__pycache__/
+**/.env
+./postgrest-openapi-ro.yaml/
+/dagster-ai4ef-train-app/
+/shared_storage/
+/api/api_backup.py

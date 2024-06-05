@@ -1,43 +1,70 @@
 {
-  "title": "LEIF Service 2 inputs",
+  "title": "LEIF Service 2 outputs",
   "description": "This document records the outputs of the LEIF Service 2 system",
   "type": "object",
   "properties": [
     {
       "title": "Electricity produced by solar panels",
-      "description": "The amount of electricity produced by the solar panels, which are installed in the project",
+      "description": "The amount of electricity produced by the solar panels, which are installed in the project.",
       "type": "float",
       "unit": "[MWh per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "1"
+      "id": "5"
     },
     {
-      "title": "Primary energy consumption after (KW)",
-      "description": "Primary energy consumption after installing the solar panel system",
+      "title": "Primary energy consumption after",
+      "description": "Primary energy consumption after installing the solar panel system.",
       "type": "float",
       "unit": "[MWh per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "2"
+      "id": "6"
     },
     {
       "title": "Reduction of primary energy consumption",
-      "description": "Reduction of primary energy consumption: Difference between primary energy consumption before and after",
+      "description": "Reduction of primary energy consumption: Difference between primary energy consumption before and after.",
       "type": "float",
       "unit": "[MWh per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "3"
+      "id": "7"
     },
     {
       "title": "CO2 emissions reduction",
-      "description": "The amount of CO2 emissions reduction in the project",
+      "description": "The amount of CO2 emissions reduction in the project.",
       "type": "float",
-      "unit": "[t CO2 per year]",
+      "unit": "[tons of CO2 per year]",
       "minimum": "0",
       "maximum": "-",
-      "id": "4"
+      "id": "8"
+    },
+    {
+      "title": "Expected annual self consumption",
+      "description": "The expected annual self-consumption of the electricity produced by the solar panels.",
+      "type": "float",
+      "unit": "[%]",
+      "minimum": "0",
+      "maximum": "-",
+      "id": "9"
+    },
+    {
+      "title": "Annual financial savings",
+      "description": "The annual financial savings produced by installation of solar panels.",
+      "type": "float",
+      "unit": "[Euro]",
+      "minimum": "0",
+      "maximum": "-",
+      "id": "10"
+    },
+    {
+      "title": "Payback period",
+      "description": "The payback period of the investment in the solar panel system.",
+      "type": "float",
+      "unit": "[Years]",
+      "minimum": "0",
+      "maximum": "-",
+      "id": "11"
     }
   ]
 }

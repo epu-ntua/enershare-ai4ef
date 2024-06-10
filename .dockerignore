@@ -1,7 +1,8 @@
 **/lightning_logs/
 **/__pycache__/
-**/.env
+# **/.env
 # models-scalers/
 plots/
 /api/api_backup.py
 .dockerignore
+.gitignore

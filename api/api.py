@@ -5,6 +5,9 @@ import numpy as np
 import pandas as pd
 import json
 from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
 tags_metadata = [
     {"name": "Service 1", "description": "REST APIs for service 1"},
@@ -49,9 +52,12 @@ service_2_features = ['Region', 'Electricity consumption of the grid',
                     'Current inverter set power', 'Inverter power in project']
 
 # Add the parent directory to the system path
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, parent_dir)
+# parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# sys.path.insert(0, parent_dir)
 
+current_dir = os.getcwd()
+shared_storage_dir = Path(os.environ.get("SHARED_STORAGE_PATH"))
+parent_dir = os.path.join(current_dir, shared_storage_dir)
 # Create path to models_scalers and json_files directory
 models_scalers_dir = os.path.join(parent_dir, 'models-scalers')
 json_files_dir = os.path.join(parent_dir, 'json_files')
@@ -61,8 +67,8 @@ service_1_ml_path = os.path.join(models_scalers_dir, 'best_MLPClassifier.ckpt')
 service_2_ml_path = os.path.join(models_scalers_dir, 'best_MLPRegressor.ckpt')
 service_1_scalers_path = os.path.join(models_scalers_dir, 'MLPClassifier_scalers.pkl')
 service_2_scalers_path = os.path.join(models_scalers_dir, 'MLPRegressor_scalers.pkl')
-ef_comp_outputs_path = os.path.join(json_files_dir, 'EF_comp_outputs.json')
-sol_pan_outputs_path = os.path.join(json_files_dir, 'sol_pan_outputs.json')
+service1_outputs_path = os.path.join(json_files_dir, 'service1_outputs.json')
+service2_outputs_path = os.path.join(json_files_dir, 'service2_outputs.json')
 
 # service_1_ml_path: str = "../models-scalers/best_MLPClassifier.ckpt"
 # service_1_scalers_path: str = "../models-scalers/MLPClassifier_scalers.pkl"
@@ -186,7 +192,7 @@ async def get_building_parameters_service_1(parameters: dict = {"building_total_
 
     prediction = service_1_model_predict(parameters, service_1_targets, service_1_ml_path, service_1_scalers_path)
 
-    with open(ef_comp_outputs_path, 'r') as json_file:
+    with open(service1_outputs_path, 'r') as json_file:
         json_template = json.load(json_file)
         properties = []
 
@@ -272,7 +278,7 @@ async def get_building_parameters_service_2(parameters: dict ={"average_monthly_
     # Round all values to two digits
     api_output = {key: round(value, 2) for key, value in api_output.items()}
 
-    with open(sol_pan_outputs_path, 'r') as json_file:
+    with open(service2_outputs_path, 'r') as json_file:
         json_template = json.load(json_file)
         properties = []
 

@@ -40,7 +40,6 @@ from .MLPClassifier_HPO import Classifier
 from .MLPRegressor_HPO import service_2_model_predict
 from .MLPRegressor_HPO import Regression
 import os
-import sys
 
 
 service_1_features = ['Building total area', 'Reference area', 'Above ground floors', 'Underground floor', 
@@ -52,12 +51,10 @@ service_2_features = ['Region', 'Electricity consumption of the grid',
                     'Current inverter set power', 'Inverter power in project']
 
 # Add the parent directory to the system path
-# parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-# sys.path.insert(0, parent_dir)
-
 current_dir = os.getcwd()
 shared_storage_dir = Path(os.environ.get("SHARED_STORAGE_PATH"))
 parent_dir = os.path.join(current_dir, shared_storage_dir)
+
 # Create path to models_scalers and json_files directory
 models_scalers_dir = os.path.join(parent_dir, 'models-scalers')
 json_files_dir = os.path.join(parent_dir, 'json_files')
@@ -69,12 +66,6 @@ service_1_scalers_path = os.path.join(models_scalers_dir, 'MLPClassifier_scalers
 service_2_scalers_path = os.path.join(models_scalers_dir, 'MLPRegressor_scalers.pkl')
 service1_outputs_path = os.path.join(json_files_dir, 'service1_outputs.json')
 service2_outputs_path = os.path.join(json_files_dir, 'service2_outputs.json')
-
-# service_1_ml_path: str = "../models-scalers/best_MLPClassifier.ckpt"
-# service_1_scalers_path: str = "../models-scalers/MLPClassifier_scalers.pkl"
-
-# service_2_ml_path: str = "../models-scalers/best_MLPRegressor.ckpt"
-# service_2_scalers_path: str = "../models-scalers/MLPRegressor_scalers.pkl"
 
 # Function to convert 1 or 0 to boolean
 def convert_to_boolean(value):

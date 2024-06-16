@@ -15,14 +15,6 @@ from dagster import AssetOut, graph_multi_asset
 from .class_assets import *
 from .data_assets import extract_data_cols
 from typing import Tuple
-from dotenv import load_dotenv
-
-# Construct the path to the .env file located two parent directories up
-base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-env_path = os.path.join(base_dir, '.env')
-# Load the .env file
-load_dotenv(dotenv_path=env_path)
-storage_path = os.environ.get("STORAGE_PATH")
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

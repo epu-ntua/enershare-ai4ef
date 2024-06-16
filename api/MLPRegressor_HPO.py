@@ -39,10 +39,15 @@ from pytorch_lightning.callbacks import EarlyStopping
 import logging
 import click
 import sys
+from dotenv import load_dotenv
+from pathlib import Path
 
-# Add the parent directory to the system path
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, parent_dir)
+load_dotenv()
+
+current_dir = os.getcwd()
+shared_storage_dir = Path(os.environ.get("SHARED_STORAGE_PATH"))
+print(shared_storage_dir)
+parent_dir = os.path.join(current_dir, shared_storage_dir)
 
 # Create path to models_scalers and json_files directory
 models_scalers_dir = os.path.join(parent_dir, 'models-scalers')

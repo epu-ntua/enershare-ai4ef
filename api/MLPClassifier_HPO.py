@@ -19,7 +19,6 @@ from sklearn.model_selection import train_test_split
 
 from scipy.stats import zscore
 
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -31,6 +30,24 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping
 import logging
 import click
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv()
+
+current_dir = os.getcwd()
+shared_storage_dir = Path(os.environ.get("SHARED_STORAGE_PATH"))
+print(shared_storage_dir)
+parent_dir = os.path.join(current_dir, shared_storage_dir)
+
+# Create path to models_scalers and json_files directory
+models_scalers_dir = os.path.join(parent_dir, 'models-scalers')
+datasets_dir = os.path.join(parent_dir, 'datasets')
+
+# Create paths to the models and scalers
+datasets_path = os.path.join(datasets_dir, 'EF_comp.csv')
+ml_path = os.path.join(models_scalers_dir, 'best_MLPClassifier.ckpt')
+scalers_path = os.path.join(models_scalers_dir, 'MLPClassifier_scalers.pkl')
 
 #### Define the model and hyperparameters
 class Classifier(pl.LightningModule):
@@ -317,8 +334,8 @@ def cross_plot_actual_pred(plot_pred, plot_actual):
     ax.plot(plot_actual, label='Data')
     ax.legend()
     plt.show()
-    if not os.path.exists("./plots/"): os.makedirs("./plots/")
-    plt.savefig('./plots/pred_actual.png')
+    if not os.path.exists(f"{parent_dir}/plots/"): os.makedirs(f"{parent_dir}/plots/")
+    plt.savefig(f'{parent_dir}/plots/pred_actual.png')
 
 def calculate_metrics(test_X, test_Y, model_path):
     """
@@ -508,7 +525,7 @@ def optuna_visualize(study, optuna_viz):
 def service_1_model_predict(test_X, service_1_targets, model_path, scalers_path):
     model = Classifier.load_from_checkpoint(checkpoint_path=model_path)
 
-    with open('./models-scalers/MLPClassifier_scalers.pkl', 'rb') as f: scalers = pickle.load(f)
+    with open(f'{parent_dir}/models-scalers/MLPClassifier_scalers.pkl', 'rb') as f: scalers = pickle.load(f)
 
     # with open(scalers_path, 'rb') as f: scalers = pickle.load(f)
 
@@ -555,7 +572,7 @@ def argument_extraction(kwargs):
             find ideal hyperparameters and train said model to reduce its loss function"
 )
 
-@click.option("--input_filepath", type=str, default='./datasets/EF_comp.csv', help="File containing csv files used by the model")
+@click.option("--input_filepath", type=str, default=datasets_path, help="File containing csv files used by the model")
 @click.option("--seed", type=int, default=42, help='seed used to set random state to the model')
 @click.option("--max_epochs", type=int, default=5, help='range of number of epochs used by the model')
 @click.option("--n_layers", type=str, default='2,6', help='range of number of layers used by the model')
@@ -570,8 +587,8 @@ def argument_extraction(kwargs):
 @click.option('--feature_cols', type=str, default='Building total area,Reference area,Above ground floors,Underground floor,Initial energy class,Energy consumption before,Energy class after', help='Dataset columns not necesary for training')
 @click.option('--target_cols', type=str, default='Carrying out construction works,Reconstruction of engineering systems,Heat installation,Water heating system', help='Target column that we want to predict (model output)')
 @click.option('--predict', type=int, default=0, help='predict value or not')
-@click.option('--model_path', type=str, default='./backup-models-scalers/best_MLPClassifier.ckpt', help='directory to store models and scalers')
-@click.option('--scalers_path', type=str, default='./backup-models-scalers/MLPClassifier_scalers.pkl', help='filename of best model')
+@click.option('--model_path', type=str, default=ml_path, help='directory to store models and scalers')
+@click.option('--scalers_path', type=str, default=scalers_path, help='filename of best model')
 
 def forecasting_model(**kwargs):
     """
@@ -598,7 +615,7 @@ def forecasting_model(**kwargs):
     study = optuna_optimize(kwargs, df, len(target_cols))
     
     # visualize results of study
-    optuna_visualize(study, './optuna_viz/classifier/')
+    optuna_visualize(study, f'{parent_dir}/optuna_viz/classifier/')
 
     # if not os.path.exists(kwargs["model_path"]): os.makedirs(kwargs["model_path"])
 

@@ -10,7 +10,6 @@ COPY ./python_requirements.txt /leif_app/
 COPY ./api /leif_app/api/
 COPY ./datasets /leif_app/datasets/
 COPY ./json_files /leif_app/json_files/
-COPY ./models-scalers/ /leif_app/models-scalers/
 COPY ./postgrest-openapi-ro.yaml/ /leif_app/
 COPY ./shared_storage/ /leif_app/shared_storage/
 

@@ -7,6 +7,14 @@ import json
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from dotenv import load_dotenv
+
+# from classifier import service_1_model_predict
+from .MLPClassifier_HPO import service_1_model_predict
+from .MLPClassifier_HPO import Classifier
+from .MLPRegressor_HPO import service_2_model_predict
+from .MLPRegressor_HPO import Regression
+import os
+
 load_dotenv()
 
 tags_metadata = [
@@ -33,14 +41,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# from classifier import service_1_model_predict
-from .MLPClassifier_HPO import service_1_model_predict
-from .MLPClassifier_HPO import Classifier
-from .MLPRegressor_HPO import service_2_model_predict
-from .MLPRegressor_HPO import Regression
-import os
-
 
 service_1_features = ['Building total area', 'Reference area', 'Above ground floors', 'Underground floor', 
  'Initial energy class', 'Energy consumption before', 'Energy class after']

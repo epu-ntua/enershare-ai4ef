@@ -1,8 +1,14 @@
 from dagster import ConfigurableResource
 from dotenv import load_dotenv
 import os
+from pathlib import Path
+
 load_dotenv()
-storage_path = os.getenv("SHARED_STORAGE_PATH")
+
+# Construct the path to navigate three levels up (outside of dagster)
+current_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
+shared_storage_dir = Path(os.environ.get("SHARED_STORAGE_PATH"))
+parent_dir = os.path.join(current_dir, shared_storage_dir)
 
 class TrainConfig(ConfigurableResource):
     input_filepath: str = "http://enershare.epu.ntua.gr/consumer-data-app/openapi/0.5/efcomp" # "../datasets/EF_comp.csv" 
@@ -21,9 +27,9 @@ class TrainConfig(ConfigurableResource):
     feature_cols: str = "Building total area,Reference area,Above ground floors,Underground floor,Initial energy class,Energy consumption before,Energy class after"
     target_cols: str = "Carrying out construction works,Reconstruction of engineering systems,Heat installation,Water heating system"
     predict: int = 0
-    ml_path: str = f"{storage_path}/models-scalers/best_MLPClassifier.ckpt"
-    scalers_path: str = f"{storage_path}/models-scalers/MLPClassifier_scalers.pkl"
-    optuna_viz: str = f"{storage_path}/optuna_viz/classifier/"
+    ml_path: str = f"{parent_dir}/models-scalers/best_MLPClassifier.ckpt"
+    scalers_path: str = f"{parent_dir}/models-scalers/MLPClassifier_scalers.pkl"
+    optuna_viz: str = f"{parent_dir}/optuna_viz/classifier/"
     mlClass: str = "Classifier"
 
     def extract_data_cols(self):

@@ -16,14 +16,16 @@ import requests
 import json
 from dotenv import load_dotenv
 import logging
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
+import json 
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker, Session
 
 # Construct the path to the .env file located two parent directories up
 base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 env_path = os.path.join(base_dir, '.env')
 # Load the .env file
 load_dotenv(dotenv_path=env_path)
-storage_path = os.environ.get("SHARED_STORAGE_PATH")
 api_key = os.environ.get("API_KEY")
 consumer_agent_id = os.environ.get("CONSUMER_AGENT_ID")
 provider_agent_id = os.environ.get("PROVIDER_AGENT_ID")
@@ -38,11 +40,40 @@ def is_url(s):
     try:
         result = urlparse(s)
         # Check if the scheme is HTTP, HTTPS, or FTP
-        return all([result.scheme, result.netloc])
+        return result.scheme.lower() in ['http', 'https', 'ftp'] and result.netloc
     except:
         return False
 
-import json 
+def is_postgres_url(url):
+    parsed_url = urlparse(url)
+    return parsed_url.scheme.lower() == 'postgresql'
+
+def fetch_data_from_db(url):
+
+    parsed_url = urlparse(url)
+    query_params = parse_qs(parsed_url.query)
+    schema_name = query_params.get('schema', [''])[0]
+    table_name = query_params.get('table', [''])[0]
+    url_without_query_params = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+    print("Schema:", schema_name, "Table:", table_name, "URL without query params:", url_without_query_params)
+
+    engine = create_engine(url_without_query_params, pool_pre_ping=True)
+
+    metadata = MetaData()
+    metadata.reflect(bind=engine, schema=schema_name)    
+   
+    # Get the table from metadata
+    table = metadata.tables[f'{schema_name}.{table_name}']
+
+    Session = sessionmaker(bind=engine)
+    db = Session()
+    
+    # Query the database to get all rows from the table
+    result = db.query(table).all()
+
+    # Convert the result to a DataFrame
+    df = pd.DataFrame(result)
+    return df
 
 def request_data(path):
     # Headers (if any)
@@ -153,6 +184,8 @@ def get_data(context):
 
     if(is_url(config.input_filepath)):
         initial_data = pd.DataFrame(request_data(config.input_filepath))
+    elif(is_postgres_url(config.input_filepath)):
+        initial_data = fetch_data_from_db(config.input_filepath)
     elif(is_filepath(config.input_filepath)):
         initial_data = pd.read_csv(config.input_filepath) #,index_col=0
     else:

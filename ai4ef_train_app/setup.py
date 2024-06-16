@@ -1,6 +1,16 @@
 from setuptools import find_packages, setup
+import os
 
-with open("python_requirements.txt", "r") as f:
+# Get the current working directory
+current_directory = os.getcwd()
+
+# Get the parent directory
+parent_directory = os.path.dirname(current_directory)
+
+# Construct the path to the requirements.txt file in the parent directory
+requirements_path = os.path.join(parent_directory, 'python_requirements.txt')
+
+with open(requirements_path, "r") as f:
     python_requirements = f.read().splitlines()
 
 setup(

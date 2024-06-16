@@ -1,5 +1,5 @@
 click==8.1.7
-fastapi==0.104.1
+fastapi==0.109.1 # updated for vulnerability reasons
 matplotlib==3.8.2
 numpy==1.26.2
 optuna==3.4.0

@@ -6,3 +6,4 @@ plots/
 /api/api_backup.py
 .dockerignore
 .gitignore
+Makefile

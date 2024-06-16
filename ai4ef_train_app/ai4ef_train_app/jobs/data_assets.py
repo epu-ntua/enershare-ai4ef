@@ -30,8 +30,6 @@ api_key = os.environ.get("API_KEY")
 consumer_agent_id = os.environ.get("CONSUMER_AGENT_ID")
 provider_agent_id = os.environ.get("PROVIDER_AGENT_ID")
 
-from dagster_ai4ef_train_app.resources.my_io_manager import CustomFilesystemIOManager
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Methods ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def is_filepath(s):
     return os.path.isabs(s) or os.path.isfile(s) or os.path.isdir(s)
@@ -179,8 +177,6 @@ def get_data(context):
 
     initial_data = None
     config = context.resources.config
-
-    print(CustomFilesystemIOManager(base_dir='test')._get_path(context))
 
     if(is_url(config.input_filepath)):
         initial_data = pd.DataFrame(request_data(config.input_filepath))

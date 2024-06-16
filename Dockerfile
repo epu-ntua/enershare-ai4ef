@@ -7,13 +7,13 @@ ENV DAGSTER_HOME=/leif_app
 
 # Copy the current directory contents into the container at /leif_app
 COPY ./python_requirements.txt /leif_app/
-COPY ./api /leif_app/api/
+COPY ./ai4ef_model_app /leif_app/ai4ef_model_app/
 COPY ./datasets /leif_app/datasets/
 COPY ./json_files /leif_app/json_files/
 COPY ./postgrest-openapi-ro.yaml/ /leif_app/
 COPY ./shared_storage/ /leif_app/shared_storage/
 
-COPY ./dagster_ai4ef_train_app /leif_app/dagster_ai4ef_train_app
+COPY ./ai4ef_train_app /leif_app/ai4ef_train_app
 
 # Install build-essential and other necessary system dependencies
 RUN apt-get update \

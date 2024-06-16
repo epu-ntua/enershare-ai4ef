@@ -4,8 +4,8 @@ import torch
 import pickle
 
 from dagster import multi_asset, AssetIn
-from dagster_ai4ef_train_app.class_assets import Classifier, Regressor
-from dagster_ai4ef_train_app.data_assets import data_scaling
+from ai4ef_train_app.class_assets import Classifier, Regressor
+from ai4ef_train_app.data_assets import data_scaling
 
 @multi_asset(
     name="service_1_predict",

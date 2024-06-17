@@ -1126,7 +1126,7 @@
   },
   "x-tagGroups": [
     {
-      "name": "new_posgrest",
+      "name": "Data sharing",
       "tags": [
         "Introspection",
         "solpancomp",
@@ -1134,7 +1134,7 @@
       ]
     },
     {
-      "name": "new_service",
+      "name": "Services",
       "tags": [
         "Service 1",
         "Service 2",

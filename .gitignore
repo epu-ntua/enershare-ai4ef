@@ -1,0 +1,14 @@
+/datasets/
+/json_files/
+/misc/
+/shared_storage/
+**/__pycache__/
+**/lightning_logs/
+**/.env
+**/tmp*/
+**/my_data/
+**/build/
+**/ai4ef_train_app_tests/
+**/ai4ef_train_app.egg-info/
+/postgrest-openapi-ro.yaml
+/Makefile

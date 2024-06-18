@@ -1,17 +1,32 @@
 version: '3'
 services:
-  leif:
-      container_name: leif-backend-service
-      restart: always      
-      image: ai4ef-fastapi
-      ports:
-        - "8888:8888"
-      build: .
-      expose:
-        - "8888"
-      volumes:
-        - ./:/leif_app/code # local dir is translate to leif_app/code in image file system
-        # uvicorn api:app --host 0.0.0.0 --port 8888 --reload
+  ai4ef-model-app:
+    container_name: ai4ef-model-app
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    command: ["uvicorn", "ai4ef_model_app.api:app", "--host", "0.0.0.0", "--port", "8888"]
+    expose:
+      - "8888"
+    volumes:
+      - ./:/leif_app/code # local dir is translate to leif_app/code in image file system
+
+  ai4ef-train-app:
+    container_name: ai4ef-train-app
+    restart: always
+    image: ai4ef-train-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /leif_app/ai4ef_train_app
+    command: ["dagster", "dev", "-h", "0.0.0.0", "-p", "8890"]
+    expose:
+      - "8890"
+    ports:
+      - "8890:8890"
 
   server:
     container_name: leif-postgrest-service
@@ -39,9 +54,9 @@ services:
     volumes:
       - ./postgrest-openapi-ro.yaml:/usr/share/nginx/html/postgrest-openapi-ro.yaml:ro # ro = readOnly
     environment:
-        API_URL: ./postgrest-openapi-ro.yaml      
+        API_URL: ./postgrest-openapi-ro.yaml
     # environment:
-        # API_URL: http://enershare.epu.ntua.gr:8886/      
+    #     API_URL: http://enershare.epu.ntua.gr:8886/      
   
 networks:
   my_network:

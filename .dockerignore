@@ -1,9 +1,9 @@
-.dockerignore
-lightning_logs
-__pycache__
-.env
-eda
+**/lightning_logs/
+**/__pycache__/
+# **/.env
 # models-scalers/
 plots/
-api_template.py
-test.py
+/api/api_backup.py
+.dockerignore
+.gitignore
+Makefile

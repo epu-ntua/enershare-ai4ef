@@ -15,24 +15,18 @@ import pickle
 import optuna
 from optuna.integration import PyTorchLightningPruningCallback
 
-from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
-
 from sklearn.preprocessing import LabelEncoder
-
-from darts import TimeSeries
-from darts.metrics import mape as mape_darts
-from darts.metrics import mase as mase_darts
-from darts.metrics import mae as mae_darts
-from darts.metrics import rmse as rmse_darts
-from darts.metrics import smape as smape_darts
-from darts.metrics import mse as mse_darts
-
 from sklearn.model_selection import train_test_split
 
 from scipy.stats import zscore
 
-from darts.models import NaiveSeasonal
+from darts import TimeSeries
+from darts.metrics import mape as mape_darts
+from darts.metrics import mae as mae_darts
+from darts.metrics import rmse as rmse_darts
+from darts.metrics import smape as smape_darts
+from darts.metrics import mse as mse_darts
 
 import torch
 import torch.nn as nn
@@ -44,12 +38,25 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping
 import logging
 import click
-
-# get environment variables
+import sys
 from dotenv import load_dotenv
+from pathlib import Path
+
 load_dotenv()
-# explicitly set MLFLOW_TRACKING_URI as it cannot be set through load_dotenv
-MLFLOW_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI")
+
+current_dir = os.getcwd()
+shared_storage_dir = Path(os.environ.get("SHARED_STORAGE_PATH"))
+print(shared_storage_dir)
+parent_dir = os.path.join(current_dir, shared_storage_dir)
+
+# Create path to models_scalers and json_files directory
+models_scalers_dir = os.path.join(parent_dir, 'models-scalers')
+datasets_dir = os.path.join(parent_dir, 'datasets')
+
+# Create paths to the models and scalers
+datasets_path = os.path.join(datasets_dir, 'Sol_pan_comp.csv')
+ml_path = os.path.join(models_scalers_dir, 'best_MLPRegressor.ckpt')
+scalers_path = os.path.join(models_scalers_dir, 'MLPRegressor_scalers.pkl')
 
 #### Define the model and hyperparameters
 class Regression(pl.LightningModule):
@@ -119,12 +126,10 @@ class Regression(pl.LightningModule):
         """
         layers = [] # list of layer to add at NN
         cur_layer = self.hparams.input_dim
-        # print(cur_layer)
 
         # layer_sizes must be iterable for creating model layers
         if(not isinstance(self.hparams.layer_sizes,list)):
-            self.hparams.layer_sizes = [self.hparams.layer_sizes] 
-
+            self.hparams.layer_sizes = [self.hparams.layer_sizes]            
         for next_layer in self.hparams.layer_sizes: 
             layers.append(nn.Linear(int(cur_layer), int(next_layer)))
             layers.append(getattr(nn, self.hparams.activation)()) # nn.activation_function (as suggested by Optuna)
@@ -239,16 +244,18 @@ class Regression(pl.LightningModule):
         gc.collect()
 
 
-def data_scaling(dframe, onehot_fields, categorical_scalers=None, train_scalers=None, train=False, target=False):
+def data_scaling(dframe, categorical_scalers=None, train_scalers=None, train=False, target=False):
 
     # if target dataframe, then its a single-column df, a series. Need to convert it back to df
     if(target): dframe = pd.DataFrame(dframe)
+
+    categorical_cols = [col for col in dframe.columns if dframe[col].isin([0, 1]).all() or dframe[col].apply(lambda x: isinstance(x, str)).all()]
 
     # Categorical variables: label encoding
     # Initialize a dictionary to store the scalers    
     # if not training set, then use existing scalers
     if(train):
-        categorical_scalers = {column: LabelEncoder() for column in onehot_fields}
+        categorical_scalers = {column: LabelEncoder() for column in categorical_cols}
         # Scale each column and store in the dictionary
         for column, scaler in categorical_scalers.items():
             if(column in dframe.columns):
@@ -259,7 +266,7 @@ def data_scaling(dframe, onehot_fields, categorical_scalers=None, train_scalers=
                 dframe[column] = scaler.transform(dframe[column])
 
     # Continuous variables: scaling
-    continuous_fields = [col for col in dframe.columns if col not in onehot_fields]
+    continuous_fields = [col for col in dframe.columns if col not in categorical_cols]
 
     # Initialize a dictionary to store the scalers      
     # if not training set, then use existing scalers
@@ -274,59 +281,58 @@ def data_scaling(dframe, onehot_fields, categorical_scalers=None, train_scalers=
             if(column in dframe.columns):
                 dframe[column] = scaler.transform(dframe[[column]])
 
-
     if(train):
         return dframe, train_scalers, categorical_scalers
     else:
         return dframe
 
-def train_test_valid_split(dframe,statify_cols='Region',target_col='Electricity produced by solar panels'):
+def train_test_valid_split(dframe, target_cols):
     """
     we choose to split data with validation/test data to be at the end of time series
     Parameters:
-        pandas.dataframe containing dataframe to split
+        dframe: pandas.dataframe containing dataframe to split
+        stratify_cols: list of dframe cols to be used for stratification 
+        target_cols: list of dframe columns to be used as target for training 
     Returns:
         pandas.dataframe containing train/test/valiation data
         pandas.dataframe containing valiation data
         pandas.dataframe containing test data
+        1x2 sklearn scalers vector for X and Y respectively 
     """
 
     scalers = {}
+    categorical_cols = [col for col in dframe.columns if dframe[col].isin([0, 1]).all() or dframe[col].apply(lambda x: isinstance(x, str)).all()]
 
-    continuous_fields = [col for col in dframe.columns if col not in statify_cols]
+    continuous_fields = [col for col in dframe.columns if col not in categorical_cols]
 
     # Remove NaNs / duplicates / outliers
     dframe = dframe.dropna().reset_index(drop=True)
     dframe.drop_duplicates(inplace=True)
     dframe = dframe[(np.abs(zscore(dframe[continuous_fields])) <= 3).all(axis=1)]
 
-    y = dframe[target_col].copy()
+    strat_df = dframe[categorical_cols].copy()
+    y = dframe[target_cols].copy()
 
-    strat_df = dframe[statify_cols].copy()
-    dframe.drop(target_col,axis=1,inplace=True)
-    
-    train_X, test_X, train_Y, test_Y = train_test_split(dframe, y, test_size=0.2, random_state=1, 
-                                                        shuffle=True, stratify=strat_df)
+    strat_df = dframe[categorical_cols].copy()
 
-    print(train_Y.head())
+    dframe.drop(target_cols,axis=1,inplace=True)
+
+    train_X, test_X, train_Y, test_Y = train_test_split(dframe, y, test_size=None, random_state=42, 
+                                                        shuffle=True) #stratify=strat_df
+
     # train right now is both train and validation set
-    train_X, scalers['X_continuous_scalers'], scalers['X_categorical_scalers'] = data_scaling(train_X, statify_cols, train=True)
-    train_Y, scalers['Y_continuous_scalers'], scalers['Y_categorical_scalers'] = data_scaling(train_Y, statify_cols, train=True, target=True)
+    train_X, scalers['X_continuous_scalers'], scalers['X_categorical_scalers'] = data_scaling(train_X, train=True)
+    train_Y, scalers['Y_continuous_scalers'], scalers['Y_categorical_scalers'] = data_scaling(train_Y, train=True, target=True)
 
-    test_X = data_scaling(test_X, statify_cols, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
-    test_Y = data_scaling(test_Y, statify_cols, scalers['Y_categorical_scalers'], scalers['Y_continuous_scalers'], target=True)
+    test_X = data_scaling(test_X, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
+    test_Y = data_scaling(test_Y, scalers['Y_categorical_scalers'], scalers['Y_continuous_scalers'], target=True)
 
-    train_statify_cols = [item for item in train_X.columns if item in statify_cols]
-
-    strat_df = train_X[train_statify_cols].copy()
-
-    train_X, validation_X, train_Y, validation_Y = train_test_split(train_X, train_Y, test_size=0.25, random_state=1, 
-                                                      shuffle=True, stratify=strat_df) # 0.25 x 0.8 = 0.2
+    train_stratify_cols = [item for item in train_X.columns if item in categorical_cols]
+    strat_df = train_X[train_stratify_cols].copy()
     
-    # print('OK')
-    # validation_X = data_scaling(validation_X, statify_cols, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
-    # validation_Y = data_scaling(validation_Y, statify_cols, scalers['Y_categorical_scalers'], scalers['Y_continuous_scalers'], target=True)
-    
+    train_X, validation_X, train_Y, validation_Y = train_test_split(train_X, train_Y, test_size=0.25, random_state=42, 
+                                                      shuffle=True) # , stratify=train_Y
+
     return train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers
 
 def cross_plot_actual_pred(plot_pred, plot_actual):
@@ -336,32 +342,46 @@ def cross_plot_actual_pred(plot_pred, plot_actual):
     ax.plot(plot_actual, label='Data')
     ax.legend()
     plt.show()
-    if not os.path.exists("./plots/"): os.makedirs("./plots/")
-    plt.savefig('./plots/pred_actual.png')
+    if not os.path.exists("../plots/"): os.makedirs("../plots/")
+    plt.savefig('../plots/pred_actual.png')
 
 
 def calculate_mape(actual, predicted):
     return np.mean(np.abs((np.array(actual) - np.array(predicted)) / np.array(actual))) * 100 if actual else 0
 
-def calculate_metrics(test_X, test_Y, output_dir):
-
-    model = Regression.load_from_checkpoint(checkpoint_path=f'{output_dir}/best_regressor.ckpt')
-
-    with open(f'{output_dir}/service_2_scalers.pkl', 'rb') as f: scalers = pickle.load(f)
-
-    test_X_tensor = torch.tensor(test_X.values.astype(np.float32))
+def calculate_metrics(test_X, test_Y, model_path):
+    """
+    Returns classification metrics based on the true and predicted labels as a dictionary.
     
+    Parameters:
+    - test_X: array-like of shape (n_samples,) - True labels.
+    - test_Y: array-like of shape (n_samples,) - Predicted labels.
+    
+    Returns:
+    - A dictionary with accuracy, precision, recall, f1 score, and confusion matrix.
+    """
+
+    model = Regression.load_from_checkpoint(checkpoint_path=model_path)
+    test_X_tensor = torch.tensor(test_X.values.astype(np.float32))
     pred_Y = model(test_X_tensor).detach().numpy() #create and convert output tensor to numpy array
 
     pred_series = TimeSeries.from_values(pred_Y)
     actual_series = TimeSeries.from_values(test_Y)
+
+    # Define the extremely small number you want to add
+    small_number = 1e-10
+
+    # Add this small number to each value in the series
+    pred_series = pred_series + small_number
+    actual_series = actual_series + small_number
 
     # Evaluate the model prediction
     metrics = {
         "SMAPE": smape_darts(actual_series,pred_series),
         "MAE": mae_darts(actual_series,pred_series),
         "MSE": mse_darts(actual_series,pred_series),
-        "RMSE": rmse_darts(actual_series,pred_series)
+        "RMSE": rmse_darts(actual_series,pred_series),
+        "MAPE": mape_darts(actual_series, pred_series)
     }
     
     print("  Metrics: ")
@@ -376,7 +396,7 @@ def keep_best_model_callback(study, trial):
     if study.best_trial.number == trial.number:
         study.set_user_attr(key="best_trainer", value=trial.user_attrs["best_trainer"])
 
-def objective(trial,kwargs,df):
+def objective(trial, kwargs, df, num_target_variables):
     """
     Function used by optuna for hyperparameter tuning
     Each execution of this function is basically a new trial with its params
@@ -391,10 +411,9 @@ def objective(trial,kwargs,df):
     l_rate = list(map(float, kwargs['l_rate'].split(','))) 
     layer_sizes = list(map(int, kwargs['layer_sizes'].split(',')))
 
-    # print(df)
     n_layers = trial.suggest_int("n_layers", n_layers[0], n_layers[1])
     params = {
-        'input_dim': len(df.columns) - 1, # df also has target column (thats why -1)
+        'input_dim': len(df.columns) - num_target_variables, # df also has target column
         'max_epochs': kwargs['max_epochs'],
         'seed': 42,
         'layer_sizes': [trial.suggest_categorical("n_units_l{}".format(i), layer_sizes) for i in range(n_layers)], 
@@ -465,7 +484,7 @@ def print_optuna_report(study):
 # optuna.pruners.MedianPruner() 
 # optuna.pruners.NopPruner() (no pruning)
 # Hyperband performs best with default sampler for non-deep learning tasks
-def optuna_optimize(kwargs,df):
+def optuna_optimize(kwargs, df, num_target_variables):
     """
     Function used to setup optuna for study
     Parameters: None
@@ -490,7 +509,7 @@ def optuna_optimize(kwargs,df):
                                                 timeout period elapses, stop() is called or, 
                                                 a termination signal such as SIGTERM or Ctrl+C is received.
     """
-    study.optimize(lambda trial: objective(trial,kwargs,df),
+    study.optimize(lambda trial: objective(trial, kwargs, df, num_target_variables),
                 #  n_jobs=2,
                 #    timeout=600, # 10 minutes
                    callbacks=[keep_best_model_callback],
@@ -501,42 +520,48 @@ def optuna_optimize(kwargs,df):
     
     return study
 
-def optuna_visualize(study, tmpdir):
+def optuna_visualize(study, optuna_viz):
+
+    # if dir does not exit, make it
+    if not os.path.exists(optuna_viz): os.makedirs(optuna_viz)
 
     plt.close() # close any mpl figures (important, doesn't work otherwise)
     optuna.visualization.matplotlib.plot_param_importances(study)
-    plt.savefig(f"{tmpdir}/plot_param_importances.png"); plt.close()
+    plt.savefig(f"{optuna_viz}/plot_param_importances.png"); plt.close()
 
     optuna.visualization.matplotlib.plot_optimization_history(study)
-    plt.savefig(f"{tmpdir}/plot_optimization_history.png"); plt.close()
+    plt.savefig(f"{optuna_viz}/plot_optimization_history.png"); plt.close()
     
     optuna.visualization.matplotlib.plot_slice(study)
-    plt.savefig(f"{tmpdir}/plot_slice.png"); plt.close()
+    plt.savefig(f"{optuna_viz}/plot_slice.png"); plt.close()
 
     optuna.visualization.matplotlib.plot_intermediate_values(study)
-    plt.savefig(f"{tmpdir}/plot_intermediate_values.png"); plt.close()
+    plt.savefig(f"{optuna_viz}/plot_intermediate_values.png"); plt.close()
 
-def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region', filename='best_model.ckpt'):
-    model = Regression.load_from_checkpoint(checkpoint_path=filename)
+def service_2_model_predict(test_X, service_2_targets, model_path, scalers_path):
 
-    with open('./models-scalers/service_2_scalers.pkl', 'rb') as f: scalers = pickle.load(f)
+    print(datasets_path)
+    print(ml_path)
+    print(scalers_path)
 
-    # test_X = [{"Region": "Rīga", 
-    #     "Electricity consumption of the grid": 4.65, 
-    #     "Primary energy consumption before": 11.63, 
-    #     "Current inverter set power": 0.0, 
-    #     "Inverter power in project": 10}]
+    model = Regression.load_from_checkpoint(checkpoint_path=model_path)
+    
+    with open(scalers_path, 'rb') as f: scalers = pickle.load(f)
+
+    print(test_X)
 
     test_X = pd.DataFrame.from_dict(test_X)
 
-    test_X = data_scaling(test_X, categorical_cols, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
+    test_X = data_scaling(test_X, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
 
-    test_X_tensor = torch.tensor(test_X[:10].values.astype(np.float32))
-    
+    print(f'values: {test_X[:1].values}')
+    test_X_tensor = torch.tensor(test_X[:1].values, dtype=torch.float32)
+
     pred_Y = model(test_X_tensor).detach().numpy() #create and convert output tensor to numpy array
+    print(pred_Y)
 
     unscaled_test_X = pd.DataFrame(); unscaled_pred_Y = pd.DataFrame()
-
+    
     for column, scaler in scalers['X_categorical_scalers'].items():
         unscaled_test_X[column] = scaler.inverse_transform(test_X[[column]].values.ravel())
     for column, scaler in scalers['X_continuous_scalers'].items():
@@ -545,28 +570,28 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
     for column, scaler in scalers['Y_continuous_scalers'].items():
         unscaled_pred_Y = scaler.inverse_transform(pred_Y.reshape(-1,1)).ravel()
 
-    for index, pred  in enumerate(unscaled_pred_Y):
-        ECG = unscaled_test_X.iloc[index,1] # Electricity consumption of the grid 
-        PECB = ECG * 2.5 # Primary Energy consumption before
-        real_pred = float(pred) * 2.5
-        PECA = float(pred) + PECB - real_pred 
-
-        pred = np.append(pred,PECA) # Primary energy consumption after (KW)
-        service_2_targets = np.append(service_2_targets,'Primary energy consumption after')
-
-        PECR = PECB - PECA  #Reduction of primary energy consumption
-        pred = np.append(pred,PECR)
-        service_2_targets = np.append(service_2_targets,'Reduction of primary energy consumption')
-        
-        # CO2 emmisions = PECR (in Mwh) * coefficient of t C02
-        CO2_emmisions = (real_pred / 2.5) * 0.109
-        pred = np.append(pred, CO2_emmisions)       
-        service_2_targets = np.append(service_2_targets,'CO2 emissions reduction')
-         
-    pred_dict = {service_2_targets[i]: pred[i] for i in range(len(service_2_targets))}
-    # print(pred_dict)
+    pred_dict = {service_2_targets[i]: unscaled_pred_Y[i] for i in range(len(service_2_targets))}
     
     return pred_dict
+
+def argument_extraction(kwargs):
+    print("############################ Reading Data ###############################")
+    df = pd.read_csv(kwargs['input_filepath']) #,index_col=0
+
+    print("############################ Data Preprocess ###############################")
+        # Remove date column (not needed)
+    feature_cols = kwargs['feature_cols'].split(",") #'The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction'
+    if(',' in kwargs['target_cols']): # if multiple targets
+        target_cols = kwargs['target_cols'].split(",")
+    else:
+        target_cols = [kwargs['target_cols']]
+
+    df = df[feature_cols + target_cols]
+    
+    # find categorical columns (string-based) 
+    categorical_cols = [col for col in df.columns if df[col].isin([0, 1]).all() or df[col].apply(lambda x: isinstance(x, str)).all()]
+
+    return df, target_cols, categorical_cols
 
 # Remove whitespace from your arguments
 @click.command(
@@ -574,9 +599,9 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
             find ideal hyperparameters and train said model to reduce its loss function"
 )
 
-@click.option("--input_filepath", type=str, default='./datasets/Sol_pan_comp.csv', help="File containing csv files used by the model")
+@click.option("--input_filepath", type=str, default=datasets_path, help="File containing csv files used by the model")
 @click.option("--seed", type=int, default=42, help='seed used to set random state to the model')
-@click.option("--max_epochs", type=int, default=3, help='range of number of epochs used by the model')
+@click.option("--max_epochs", type=int, default=200, help='range of number of epochs used by the model')
 @click.option("--n_layers", type=str, default='2,6', help='range of number of layers used by the model')
 @click.option("--layer_sizes", type=str, default="128,256,512,1024,2048", help='range of size of each layer used by the model')
 @click.option("--l_rate", type=str, default='0.0001,0.001', help='range of learning rate used by the model')
@@ -586,11 +611,11 @@ def service_2_model_predict(test_X, service_2_targets, categorical_cols='Region'
 @click.option("--num_workers", type=int, default=2, help='accelerator (cpu/gpu) processesors and threads used') 
 @click.option('--n_trials', type=int, default=3, help='number of trials for HPO')
 @click.option('--preprocess', type=int, default=1, help='data preprocessing and scaling')
-@click.option('--feature_cols', type=str, default='Region,Electricity consumption of the grid,Primary energy consumption before,Current inverter set power,Inverter power in project', help='Dataset columns not necesary for training')
-@click.option('--target_col', type=str, default='Electricity produced by solar panels', help='Target column that we want to predict (model output)')
-@click.option('--predict', type=int, default=0, help='predict value or not')
-@click.option('--output_dir', type=str, default='./models-scalers/', help='directory to store models and scalers')
-# @click.option('--filename', type=str, default='./models-scalers/best_regressor.ckpt', help='filename of best model')
+@click.option('--feature_cols', type=str, default='Region,Electricity consumption of the grid,Current inverter set power,Inverter power in project', help='Dataset columns not necesary for training')
+@click.option('--target_cols', type=str, default='Electricity produced by solar panels', help='Target column that we want to predict (model output)')
+@click.option('--predict', type=int, default=1, help='predict value or not')
+@click.option('--model_path', type=str, default=ml_path, help='directory to store models and scalers')
+@click.option('--scalers_path', type=str, default=scalers_path, help='filename of best model')
 
 def forecasting_model(**kwargs):
     """
@@ -603,58 +628,36 @@ def forecasting_model(**kwargs):
         kwargs: dictionary containing click paramters used by the script
     Returns: None 
     """
+    # ~~~~~~~~~~~~ Data Collection & process ~~~~~~~~~~~~~~~~~~~~
+    df, target_cols, categorical_cols = argument_extraction(kwargs)
 
-    if not os.path.exists("./temp_files/"): os.makedirs("./temp_files/")
-    # store mlflow metrics/artifacts on temp file
-    with tempfile.TemporaryDirectory(dir='./temp_files/') as tmpdir: 
-        # ~~~~~~~~~~~~ Data Collection & process ~~~~~~~~~~~~~~~~~~~~
-        print("############################ Reading Data ###############################")
-        df = pd.read_csv(kwargs['input_filepath']) #,index_col=0
-        df_backup = df.copy()
+    global train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers
+    train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers = train_test_valid_split(df,target_cols)
+    with open(kwargs['scalers_path'], 'wb') as f: pickle.dump(scalers, f)
 
-        print("############################ Data Preprocess ###############################")
-        # Remove date column (not needed)
-        feature_cols = kwargs['feature_cols'].split(",") #'The data,Primary energy consumption after ,Reduction of primary energy,CO2 emissions reduction'
-        target_col = kwargs['target_col']
-        df = df[feature_cols + [target_col]]
+    if(kwargs['predict']):
+        service_2_model_predict(test_X, target_cols, categorical_cols, kwargs['model_path'], kwargs['scalers_path'])
+        return
+    
+    study = optuna_optimize(kwargs, df, len(target_cols))
+    
+    # visualize results of study
+    optuna_visualize(study, '../optuna_viz/regressor/')
 
-        # find categorical columns (string-based) 
-        categorical_cols = [col for col in df.columns if df[col].apply(lambda x: isinstance(x, str)).all()]
+    if not os.path.exists(kwargs["model_path"]): os.makedirs(kwargs["model_path"])
 
-        global train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers
-        train_X, validation_X, test_X, train_Y, validation_Y, test_Y, scalers = train_test_valid_split(df,categorical_cols,target_col)
+    print(f'Save best model at file: \"{kwargs["model_path"]}\"')
+    best_model = study.user_attrs["best_trainer"]
 
-        if(kwargs['predict']):
-            service_2_model_predict(test_X, target_col, categorical_cols, f'{kwargs["output_dir"]}/best_regressor.ckpt')
-            return
-        study = optuna_optimize(kwargs,df)
-        
-        # visualize results of study
-        optuna_visualize(study, tmpdir)
+    print(kwargs["model_path"])
+    # with open(kwargs["model_path"], "w") as file:
+    best_model.save_checkpoint('../models-scalers/best_MLPRegressor.ckpt')
+    print(f'Save data scalers at files: \"categorical_scalers\" and \"train_scalers\"')
+    
+    calculate_metrics(test_X, test_Y, kwargs["model_path"])
 
-        if not os.path.exists(kwargs["output_dir"]): os.makedirs(kwargs["output_dir"])
-
-        print(f'Save best model at file: \"{kwargs["output_dir"]}/best_regressor.ckpt\"')
-        best_model = study.user_attrs["best_trainer"]
-        best_model.save_checkpoint(f'{kwargs["output_dir"]}/best_regressor.ckpt')
-        print(f'Save data scalers at files: \"categorical_scalers\" and \"train_scalers\"')
-        with open(f'{kwargs["output_dir"]}/service_2_scalers.pkl', 'wb') as f: pickle.dump(scalers, f)
-        
-        calculate_metrics(test_X, test_Y, f'{kwargs["output_dir"]}')
-        
-        #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Store to Mlflow ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        #store trained model to mlflow with input singature
-        # print("\nUploading training csvs and metrics to MLflow server...")
-        # logging.info("\nUploading training csvs and metrics to MLflow server...")
-        # signature = infer_signature(train_X.head(1), pd.DataFrame(preds))
-        # mlflow.pytorch.log_model(model, "model", signature=signature)
-        # mlflow.log_params(kwargs)
-        # mlflow.log_artifacts(train_tmpdir, "train_results")
-        # mlflow.log_metrics(metrics)
-        # # mlflow.set_tag("run_id", train_start.info.run_id)        
 
 if __name__ == '__main__':
     print("\n=========== Forecasing Model =============")
     logging.info("\n=========== Forecasing Model =============")
-    # mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)    
     forecasting_model()

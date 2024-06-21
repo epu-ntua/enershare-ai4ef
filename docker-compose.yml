@@ -7,12 +7,12 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8888:8888"
-    command: ["uvicorn", "ai4ef_model_app.api:app", "--host", "0.0.0.0", "--port", "8888"]
+      - "${MODEL_APP_PORT}:${MODEL_APP_PORT}"
+    command: ["uvicorn", "ai4ef_model_app.api:app", "--host", "0.0.0.0", "--port", "${MODEL_APP_PORT}"]
     expose:
-      - "8888"
+      - "${MODEL_APP_PORT}"
     volumes:
-      - ./:/leif_app/code # local dir is translate to leif_app/code in image file system
+      - ./:/leif_app/code # local dir is translated to leif_app/code in image file system
 
   ai4ef-train-app:
     container_name: ai4ef-train-app
@@ -22,24 +22,24 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /leif_app/ai4ef_train_app
-    command: ["dagster", "dev", "-h", "0.0.0.0", "-p", "8890"]
+    command: ["dagster", "dev", "-h", "0.0.0.0", "-p", "${TRAIN_APP_PORT}"]
     expose:
-      - "8890"
+      - "${TRAIN_APP_PORT}"
     ports:
-      - "8890:8890"
+      - "${TRAIN_APP_PORT}:${TRAIN_APP_PORT}"
 
   server:
     container_name: leif-postgrest-service
     image: postgrest/postgrest
     restart: always
     ports:
-      - "8886:3000"
+      - "${POSTGREST_PORT}:3000"
     environment:
-      PGRST_DB_URI: postgresql://read_only_role:read123@enershare.epu.ntua.gr:5556/postgres
-      PGRST_DB_SCHEMA: leif
-      PGRST_DB_ANON_ROLE: read_only_role #In production this role should not be the same as the one used for the connection
-      PGRST_SERVER_PROXY_URI: "http://enershare.epu.ntua.gr:8886"
-      PGRST_OPENAPI_SERVER_PROXY_URI: "http://enershare.epu.ntua.gr:8886"
+      PGRST_DB_URI: ${PGRST_DB_URI}
+      PGRST_DB_SCHEMA: ${PGRST_DB_SCHEMA}
+      PGRST_DB_ANON_ROLE: ${PGRST_DB_ANON_ROLE}
+      PGRST_SERVER_PROXY_URI: ${PGRST_SERVER_PROXY_URI}
+      PGRST_OPENAPI_SERVER_PROXY_URI: ${PGRST_OPENAPI_SERVER_PROXY_URI}
     networks:
       - my_network 
 
@@ -48,16 +48,14 @@ services:
     image: swaggerapi/swagger-ui:latest
     restart: always
     ports:
-        - "8887:8080"
+        - "${SWAGGER_PORT}:8080"
     expose:
         - "8080"
     volumes:
       - ./postgrest-openapi-ro.yaml:/usr/share/nginx/html/postgrest-openapi-ro.yaml:ro # ro = readOnly
     environment:
         API_URL: ./postgrest-openapi-ro.yaml
-    # environment:
-    #     API_URL: http://enershare.epu.ntua.gr:8886/      
-  
+
 networks:
   my_network:
     driver: bridge

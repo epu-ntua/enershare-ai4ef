@@ -32,6 +32,7 @@ Please fill command line arguments refering to columns of the dataset provided, 
 Services use python's [click](https://click.palletsprojects.com/en/8.1.x/api/) to edit parameters using command line arguments. Please refer to each service's documentation for further details.
 
 ## Usage
+<!--
 
 ### Service 1 (classifier)
 
@@ -62,30 +63,31 @@ python classifier.py --input_filepath ./EF_comp.csv --feature_cols Building tota
                      --target_cols Carrying out construction works,Reconstruction of engineering systems,Heat installation,Water heating system
                      --output_dir ./models-scalers/ 
 ```
+-->
 
-### Service 2 (Regressor)
+### Service 1/2 (Classifier/Regressor)
 
-Service 2 regression provides hyperparameter tuning on our MLP architecture to determine the right combination of hyperparameter values:
+Services provide hyperparameter tuning on our MLP architecture to determine the right combination of hyperparameter values:
 
 #### Command-line arguments
 
-|   Parameters   | Type |        Default Value       |                           Description                           |
-|:--------------:|:----:|:--------------------------:|:---------------------------------------------------------------:|
-| input_filepath |  str |    './Sol_pan_comp.csv'    |        Folder path containing csv files used by the model       |
-|      seed      |  str |            '42'            |            seed used to set random state to the model           |
-|    n_trials    |  int |             '2'            |        number of trials - different tuning oh hyperparams       |
-|   max_epochs   |  str |             '3'            |           range of number of epochs used by the model           |
-|    n_layers    |  str |             '1'            |           range of number of layers used by the model           |
-|   layer_sizes  |  str |            "100"           |          range of size of each layer used by the model          |
-|   activation   |  str |           'ReLU'           |        activation functions experimented on by the model        |
-| optimizer_name |  str |           'Adam'           |             optimizers experimented on by the model             |
-|   batch_size   |  str |           '1024'           |             batch sizes experimented on by the model            |
-|   n_trials     |  int |             50             |                     number of trials for HPO                    |
-|   num_workers  |  str |             '2'            |       accelerator (cpu/gpu) processesors and threads used       |
-|   preprocess   |  int |             '1'            |       boolean if data require preprocessing and scaling         |
-|   feature_cols |  str |              -             |       Dataset columns necesary for training                     |
-|   target_cols  |  str |              -             |       Target column that we want to predict (model output)      |
-|   output_dir   |  str |     './models-scalers/'    |            local directory path to store models/scalers         |
+|   Parameters   | Type |        Default Value                        |                           Description                           |
+|:--------------:|:----:|:-------------------------------------------:|:---------------------------------------------------------------:|
+| input_filepath |  str |    'EF_comp.csv' / './Sol_pan_comp.csv'     |        Folder path containing csv files used by the model       |
+|      seed      |  str |            '42'                             |            seed used to set random state to the model           |
+|    n_trials    |  int |             '2'                             |        number of trials - different tuning oh hyperparams       |
+|   max_epochs   |  str |             '3'                             |           range of number of epochs used by the model           |
+|    n_layers    |  str |             '1'                             |           range of number of layers used by the model           |
+|   layer_sizes  |  str |            "100"                            |          range of size of each layer used by the model          |
+|   activation   |  str |           'ReLU'                            |        activation functions experimented on by the model        |
+| optimizer_name |  str |           'Adam'                            |             optimizers experimented on by the model             |
+|   batch_size   |  str |           '1024'                            |             batch sizes experimented on by the model            |
+|   n_trials     |  int |             50                              |                       number of trials for HPO                  |
+|   num_workers  |  str |             '2'                             |       accelerator (cpu/gpu) processesors and threads used       |
+|   preprocess   |  int |             '1'                             |       boolean if data require preprocessing and scaling         |
+|   feature_cols |  str |              -                              |       Dataset columns necesary for training                     |
+|   target_cols  |  str |              -                              |       Target column that we want to predict (model output)      |
+|   output_dir   |  str |     './models-scalers/'                     |            local directory path to store models/scalers         |
 
 **Example:** 
 ```bash
@@ -117,6 +119,5 @@ It deploys two (2) endpoints, one for each service with the following openAPI de
 | HTTP Method             | POST                                                           |
 | Endpoint URL            | `<host_ip>::8888/service_2/inference`                          |
 | Parameters              | No parameters                                                  |
-| Output Example          | [{"title":"Electricity produced by solar panels","description":"The amount of electricity produced by the solar panels, which are installed in the project.","id":"5","unit":"[MWh per year]","value":"7.45"},{"title":"Primary energy consumption after (KW)","description":"Primary energy consumption after installing the solar panel system.","id":"6","unit":"[MWh per year]","value":"0.45"},{"title":"Reduction of primary energy consumption","description":"Reduction of primary energy consumption: Difference between primary energy consumption before and after.","id":"7","unit":"[MWh per year]","value":"11.18"},{"title":"CO2 emissions reduction","description":"The amount of CO2 emissions reduction in the project.","id":"8","unit":"[tons of CO2 per year]","value":"0.81"}]|
-| Example CURL request    | `curl -X 'POST' 'http://<host_ip>:8888/service_2/inference' -H 'accept: application/json' -H 'Content-Type: application/json' -d ' {"region": "Rīga", "electricity_consumption_of_the_grid": 4.65, "primary_energy_consumption_before": 11.63, "current_inverter_set_power": 0.0, "inverter_power_in_project": 10}` |
-
+| Output Example          | [{"title":"Electricity produced by solar panels","description":"The amount of electricity produced by the solar panels, which are installed in the project.","id":"5","unit":"[MWh per year]","value":"7.17"},{"title":"Primary energy consumption after","description":"Primary energy consumption after installing the solar panel system.","id":"6","unit":"[MWh per year]","value":"0"},{"title":"Reduction of primary energy consumption","description":"Reduction of primary energy consumption: Difference between primary energy consumption before and after.","id":"7","unit":"[MWh per year]","value":"0.14"},{"title":"Annual financial savings","description":"The annual financial savings produced by installation of solar panels.","id":"10","unit":"[Euro]","value":"1649.66"},{"title":"Payback period","description":"The payback period of the investment in the solar panel system.","id":"11","unit":"[Years]","value":"1.82"}] |
+| Example CURL request    | `curl -X 'POST' 'http://enershare.epu.ntua.gr:8888/service_2/inference' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"average_monthly_electricity_consumption_before": 4.65,"average_electricity_price": 0.23,"renewable_installation_cost": 3000,"renewable_energy_generated": "", "current_inverter_set_power": 0, "planned_inverter_set_power": 10, "region": "Rīga"}'`

@@ -13,15 +13,6 @@
             "id": "1"
         },
         {
-            "title": "Reference area",
-            "description": "Τhe total area of heated spaces of a building. Unheated spaces such as basements, attics, and garages are not included.",
-            "type": "float",
-            "unit": "[m^2]",
-            "minimum": "0",
-            "maximum": "-",
-            "id": "2"  
-        },
-        {
             "title": "Above-ground floors",
             "description": "Number of above-ground floors",
             "type": "int",
@@ -29,15 +20,6 @@
             "minimum": "1",
             "maximum": "3",
             "id": "3"
-        },
-        {
-            "title": "Underground floor",
-            "description": "Information on whether the house has an underground floor",
-            "type": "int",
-            "unit": "-",
-            "minimum": "0",
-            "maximum": "1",
-            "id": "4"  
         },
         {
             "title": "Initial energy class",

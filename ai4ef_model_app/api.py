@@ -42,8 +42,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-service_1_features = ['Building total area', 'Reference area', 'Above ground floors', 'Underground floor', 
- 'Initial energy class', 'Energy consumption before', 'Energy class after']
+service_1_features = ['Building total area', 'Above ground floors', 'Initial energy class', 'Energy consumption before', 'Energy class after']
 service_1_targets = ['Carrying out construction works','Reconstruction of engineering systems',
                      'Heat installation','Water heating system']
 service_2_targets = ['Electricity produced by solar panels']
@@ -59,10 +58,15 @@ parent_dir = os.path.join(current_dir, shared_storage_dir)
 models_scalers_dir = os.path.join(parent_dir, 'models-scalers')
 json_files_dir = os.path.join(parent_dir, 'json_files')
 
+country = os.getenv("COUNTRY")
+# country = 'latvia'
+
+print(f"################ Country: {country}")
+
 # Create paths to the models and scalers
-service_1_ml_path = os.path.join(models_scalers_dir, 'best_MLPClassifier.ckpt')
+service_1_ml_path = os.path.join(models_scalers_dir, f'{country}_best_MLPClassifier.ckpt')
 service_2_ml_path = os.path.join(models_scalers_dir, 'best_MLPRegressor.ckpt')
-service_1_scalers_path = os.path.join(models_scalers_dir, 'MLPClassifier_scalers.pkl')
+service_1_scalers_path = os.path.join(models_scalers_dir, f'{country}_MLPClassifier_scalers.pkl')
 service_2_scalers_path = os.path.join(models_scalers_dir, 'MLPRegressor_scalers.pkl')
 service1_outputs_path = os.path.join(json_files_dir, 'service1_outputs.json')
 service2_outputs_path = os.path.join(json_files_dir, 'service2_outputs.json')
@@ -166,9 +170,9 @@ def calculate_savings(forecasts, parameters):
 
 @app.post("/service_1/inference", tags=["Service 1"])
 async def get_building_parameters_service_1(parameters: dict = {"building_total_area": 351.6, 
-                                                                "reference_area": 277.4, 
+                                                                # "reference_area": 277.4, 
                                                                 "above_ground_floors": 3, 
-                                                                "underground_floor": 0,
+                                                                # "underground_floor": 0,
                                                                 "initial_energy_class": "D",
                                                                 "energy_consumption_before": 106.04,
                                                                 "energy_class_after": "B"}):

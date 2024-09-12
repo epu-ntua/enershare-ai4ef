@@ -12,3 +12,4 @@
 **/ai4ef_train_app.egg-info/
 /postgrest-openapi-ro.yaml
 /Makefile
+**/backup/

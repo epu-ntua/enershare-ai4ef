@@ -67,35 +67,6 @@ python classifier.py --input_filepath ./EF_comp.csv --feature_cols Building tota
 
 ## MLApp (Investment Planning / Photovolatic Installation)
 
-Services provide hyperparameter tuning on our MLP architecture to determine the right combination of hyperparameter values:
-
-### Command-line arguments
-
-|   Parameters   | Type |        Default Value                        |                           Description                           |
-|:--------------:|:----:|:-------------------------------------------:|:---------------------------------------------------------------:|
-| input_filepath |  str |    'EF_comp.csv' / './Sol_pan_comp.csv'     |        Folder path containing csv files used by the model       |
-|      seed      |  str |            '42'                             |            seed used to set random state to the model           |
-|    n_trials    |  int |             '2'                             |        number of trials - different tuning oh hyperparams       |
-|   max_epochs   |  str |             '3'                             |           range of number of epochs used by the model           |
-|    n_layers    |  str |             '1'                             |           range of number of layers used by the model           |
-|   layer_sizes  |  str |            "100"                            |          range of size of each layer used by the model          |
-|   activation   |  str |           'ReLU'                            |        activation functions experimented on by the model        |
-| optimizer_name |  str |           'Adam'                            |             optimizers experimented on by the model             |
-|   batch_size   |  str |           '1024'                            |             batch sizes experimented on by the model            |
-|   n_trials     |  int |             50                              |                       number of trials for HPO                  |
-|   num_workers  |  str |             '2'                             |       accelerator (cpu/gpu) processesors and threads used       |
-|   preprocess   |  int |             '1'                             |       boolean if data require preprocessing and scaling         |
-|   feature_cols |  str |              -                              |       Dataset columns necesary for training                     |
-|   target_cols  |  str |              -                              |       Target column that we want to predict (model output)      |
-|   output_dir   |  str |      './models-scalers/'                    |            local directory path to store models/scalers         |
-
-**Example:** 
-```bash
-python MLPRegressor_HPO.py --dir_in ../Sol_pan_comp.csv/ --seed 42 --n_trials 20 --max_epochs 300 --n_layers 1 --layer_sizes 100 --l_window 240 --f_horizon 24
-                           --l_rate 0.0001 --activation ReLU --optimizer_name Adam --batch_size 200 --needed_cols Region,Electricity consumption of the grid,Primary energy consumption before,Current inverter set power,Inverter power in project
-                           --target_cols Electricity produced by solar panels --categorical_cols Region
-```
-
 ### FastAPI 
 
 FastAPI servers are the intermediate between the user interface and our model services, handling user requests, generating forecasts and providing the appropriate responses

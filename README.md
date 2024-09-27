@@ -6,11 +6,11 @@ The repository for AI4F services for updating building energy class and forecast
 
 This project is implemented in [Docker]((https://docs.docker.com/)) providing a complete image for the entire service -- see **Dockerfile** and **docker_compose.yml** file for details regarding installation and requirements/dependencies
 
-| Entrypoint |            Filename           |
-|:----------:|:-----------------------------:|
-| api        | api.py                        |
-| service 1  | classifier.py                 |
-| service 2  | MLPRegresssor_HPO.py          |
+| Entrypoint                 |            Filename           |
+|:--------------------------:|:-----------------------------:|
+| api                        | api.py                        |
+| Investment Planning        | MLPClassifier_HPO.py          |
+| Photovolatic Installation  | MLPRegresssor_HPO.py          |
 
 The project also includes:
 * **Dockerfile** and **docker_compose.yml**: docker files responsible for deploying the respective image, as well as **python_requirements.txt** that contains the pip dependencies required to do so.

@@ -10,7 +10,7 @@ This project is implemented in [Docker]((https://docs.docker.com/)) providing a 
 |:--------------------------:|:-----------------------------:|
 | api                        | api.py                        |
 | Investment Planning        | MLPClassifier_HPO.py          |
-| Photovolatic Installation  | MLPRegresssor_HPO.py          |
+| Photovoltaic Installation  | MLPRegresssor_HPO.py          |
 
 The project also includes:
 * **Dockerfile** and **docker_compose.yml**: docker files responsible for deploying the respective image, as well as **python_requirements.txt** that contains the pip dependencies required to do so.
@@ -20,6 +20,7 @@ The project also includes:
 docker compose build
 docker compose up -d
 ```
+After installation is complete, the AI4EF MLApp must be visible at `localhost:8888` and the AI4EF Training Playground app UI must be visible in `localhost:8890`
 
 ## Data format
 
@@ -87,7 +88,7 @@ Services provide hyperparameter tuning on our MLP architecture to determine the 
 |   preprocess   |  int |             '1'                             |       boolean if data require preprocessing and scaling         |
 |   feature_cols |  str |              -                              |       Dataset columns necesary for training                     |
 |   target_cols  |  str |              -                              |       Target column that we want to predict (model output)      |
-|   output_dir   |  str |     './models-scalers/'                     |            local directory path to store models/scalers         |
+|   output_dir   |  str |      './models-scalers/'                    |            local directory path to store models/scalers         |
 
 **Example:** 
 ```bash
@@ -102,7 +103,7 @@ FastAPI servers are the intermediate between the user interface and our model se
 it uses swagger UI that, upon deployment, generates documentation that can be foun in localhost with port 8888 [](http://enershare.epu.ntua.gr:8888/docs#/) 
 It deploys two (2) endpoints, one for each service with the following openAPI descriptions
 
-#### Service 1 Endpoint
+#### Investment Planning Endpoint
 
 | Description             | Get building parameters service 1                              |
 |-------------------------|----------------------------------------------------------------|
@@ -112,7 +113,7 @@ It deploys two (2) endpoints, one for each service with the following openAPI de
 | Output example          | [{"title":"Carrying out construction works","description":"Carrying out construction works in the enclosing structures during the project (to increase the energy efficiency of the house).","id":"1","value":"True"},{"title":"Reconstruction of engineering systems","description":"Reconstruction of engineering systems (ventilation, recuperation) to increase the energy efficiency of the house (during the project).","id":"2","value":"False"},{"title":"Water heating system","description":"Installation of a new water heating system (during the project).","id":"3","value":"False"},{"title":"Heat installation","description":"Installation of heat installations to ensure the production of heat from renewable energy sources.","id":"4","value":"False"}] |
 | Example CURL request |   `curl -X 'POST' '<host_ip>:8888/service_1/inference' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"building_total_area": 351.6, "reference_area": 277.4, "above_ground_floors": 3, "underground_floor": 0, "initial_energy_class": "D", "energy_consumption_before": 106.04, "energy_class_after": "B"}'` |
 
-#### Service 2 Endpoint
+#### Photovoltaic Installation Endpoint
 
 | Description             | Get building parameters service 2                              |
 |-------------------------|----------------------------------------------------------------|

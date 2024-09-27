@@ -24,14 +24,14 @@
       "x-displayName": "efcomp"
     },
     {
-      "name": "Service 1",
-      "description": "REST APIs for service 1",
-      "x-displayName": "Service 1"
+      "name": "Investment Planning",
+      "description": "REST APIs for Investment Planning",
+      "x-displayName": "Investment Planning"
     },
     {
-      "name": "Service 2",
-      "description": "REST APIs for service 2",
-      "x-displayName": "Service 2"
+      "name": "Photovoltaic Installation",
+      "description": "REST APIs for Photovoltaic Installation",
+      "x-displayName": "Photovoltaic Installation"
     },
     {
       "name": "System Monitoring",
@@ -423,9 +423,9 @@
     "/service_1/inference": {
       "post": {
         "tags": [
-          "Service 1"
+          "Investment Planning"
         ],
-        "summary": "Get Building Parameters Service 1",
+        "summary": "Get Building Parameters Investment Planning",
         "operationId": "get_building_parameters_service_1_service_1_inference_post",
         "requestBody": {
           "content": {
@@ -448,22 +448,10 @@
                       "example": 351.6,
                       "required": true
                     },
-                    "reference_area": {
-                      "type": "number",
-                      "description": "Reference area",
-                      "example": 277.4,
-                      "required": true
-                    },
                     "above_ground_floors": {
                       "type": "integer",
                       "description": "Number of above-ground floors",
                       "example": 3,
-                      "required": true
-                    },
-                    "underground_floor": {
-                      "type": "integer",
-                      "description": "Number of underground floors",
-                      "example": 0,
                       "required": true
                     },
                     "initial_energy_class": {
@@ -555,9 +543,9 @@
     "/service_2/inference": {
       "post": {
         "tags": [
-          "Service 2"
+          "Photovoltaic Installation"
         ],
-        "summary": "Get Building Parameters Service 2",
+        "summary": "Get Building Parameters Photovoltaic Installation",
         "operationId": "get_building_parameters_service_2_service_2_inference_post",
         "requestBody": {
           "required": true,
@@ -1136,8 +1124,8 @@
     {
       "name": "Services",
       "tags": [
-        "Service 1",
-        "Service 2",
+        "Investment Planning",
+        "Photovoltaic Installation",
       ],
       "description": "Collection of REST APIs for Serving Execution of Enershare AI4EF Service"
     }

@@ -12,7 +12,10 @@ parent_dir = os.path.join(current_dir, shared_storage_dir)
 
 class TrainConfig(ConfigurableResource):
     input_filepath: str = "http://enershare.epu.ntua.gr/consumer-data-app/openapi/0.5/efcomp" # "../datasets/EF_comp.csv" 
-    api_url: str = "http://localhost:7654"
+    # api_url: str = "http://localhost:7654"
+    authorization: str = os.environ.get('API_KEY')
+    provider_agent_id: str = os.environ.get("PROVIDER_AGENT_ID") # Forward-Id
+    consumer_agent_id: str = os.environ.get("CONSUMER_AGENT_ID") # Forward-Sender
     seed: int = 42
     max_epochs: int = 10
     n_layers: str = "2,6"

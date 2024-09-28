@@ -21,15 +21,6 @@ import json
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker, Session
 
-# Construct the path to the .env file located two parent directories up
-base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-env_path = os.path.join(base_dir, '.env')
-# Load the .env file
-load_dotenv(dotenv_path=env_path)
-api_key = os.environ.get("API_KEY")
-consumer_agent_id = os.environ.get("CONSUMER_AGENT_ID")
-provider_agent_id = os.environ.get("PROVIDER_AGENT_ID")
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Methods ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def is_filepath(s):
     return os.path.isabs(s) or os.path.isfile(s) or os.path.isdir(s)
@@ -73,17 +64,17 @@ def fetch_data_from_db(url):
     df = pd.DataFrame(result)
     return df
 
-def request_data(path):
+def request_data(config):
     # Headers (if any)
     headers = {
-        'Authorization': 'Bearer' + api_key,
-        'Forward-Id': provider_agent_id,         # reciever connector ID
-        'Forward-Sender': consumer_agent_id      # Sender connector ID
+        'Authorization': 'Bearer ' + config.authorization,
+        'Forward-Id': config.provider_agent_id,         # reciever connector ID
+        'Forward-Sender': config.consumer_agent_id      # Sender connector ID
     }
 
-    print(path)
+    print(config.input_filepath)
     # Sending GET request
-    response = requests.get(path, headers=headers)
+    response = requests.get(config.input_filepath, headers=headers)
 
     # Check if request was successful (status code 200)
     if response.status_code == 200:
@@ -179,7 +170,7 @@ def get_data(context):
     config = context.resources.config
 
     if(is_url(config.input_filepath)):
-        initial_data = pd.DataFrame(request_data(config.input_filepath))
+        initial_data = pd.DataFrame(request_data(config))
     elif(is_postgres_url(config.input_filepath)):
         initial_data = fetch_data_from_db(config.input_filepath)
     elif(is_filepath(config.input_filepath)):

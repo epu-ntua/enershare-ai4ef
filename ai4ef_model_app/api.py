@@ -59,7 +59,6 @@ models_scalers_dir = os.path.join(parent_dir, 'models-scalers')
 json_files_dir = os.path.join(parent_dir, 'json_files')
 
 country = os.getenv("COUNTRY")
-# country = 'latvia'
 
 print(f"################ Country: {country}")
 

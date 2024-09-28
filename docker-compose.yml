@@ -36,9 +36,9 @@ services:
       - nginx-proxy-manager_enershare_network
     environment:
       - SHARED_STORAGE_PATH=shared_storage/
-      - API_KEY=APIKEY-8fb34046139a60d2de235862428f38dd281cb83580b873be6d57cd48bf2add37
-      - CONSUMER_AGENT_ID=urn:ids:enershare:connectors:NTUA:Consumer:ConsumerAgent
-      - PROVIDER_AGENT_ID=urn:ids:enershare:connectors:NTUA:Provider:Pilot7
+      - API_KEY=APIKEY-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      - CONSUMER_AGENT_ID=urn:ids:enershare:connectors:org:consumer_conn:agent_name
+      - PROVIDER_AGENT_ID=urn:ids:enershare:connectors:org:provider_conn:agent_name
 
   server:
     container_name: leif-postgrest-service

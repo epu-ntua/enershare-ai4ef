@@ -1,0 +1,6 @@
+# This file describes your Helm chart. It includes metadata about the chart, like its name, version, and description. 
+name: <enershare-ai4ef> 
+version: 1.0.0 
+apiVersion: v2 
+description: <ai4ef-backend> 
+appVersion: 1.0.0 

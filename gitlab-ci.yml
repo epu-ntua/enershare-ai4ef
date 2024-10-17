@@ -1,0 +1,47 @@
+# This file defines the CI/CD pipeline structure in GitLab. It automates the steps of building, testing, and deploying your application. The pipeline stages typically include: 
+# Build stage: Builds the Docker image and pushes it to Harbor. 
+# Deploy stage: Runs Helm commands to deploy the application on Kubernetes managed by Rancher. 
+stages: 
+  - build-app 
+  - deploy-dev 
+​
+# Build the Docker image for the React app and push it to Harbor 
+build-app: 
+  stage: build-app 
+  image: harbor.deployai.eu/cvm-public/ci-tools 
+  services: 
+    - docker:dind 
+  variables: 
+    DOCKER_DRIVER: overlay2 
+  script: 
+    - echo "Building Docker image for the React app..." 
+    - docker build -t ${HARBOR_HOST}/<your-namespace>/<your-project>:latest <your-project-directory> 
+    - echo "Logging into Harbor using Robot Account..." 
+    - echo ${HARBOR_RW_PASSWORD} | docker login ${HARBOR_HOST} -u ${HARBOR_RW_USER} --password-stdin 
+    - echo "Pushing Docker image to Harbor..." 
+    - docker push ${HARBOR_HOST}/<your-namespace>/<your-project>:latest 
+  only: 
+    - main 
+  tags: 
+    - shared 
+​ 
+# Deploy the app using Helm and Rancher 
+deploy-dev: 
+  stage: deploy-dev 
+  image: harbor.deployai.eu/cvm-public/ci-tools 
+  dependencies: 
+    - build-app 
+  before_script: 
+    - echo "Secure the KUBECONFIG file" 
+    - chmod 600 ${KUBECONFIG} 
+  script: 
+    - echo "Checking Kubernetes cluster connectivity..." 
+    - kubectl get nodes 
+    - echo "Deploying to Rancher using Helm..." 
+    - helm upgrade --install <your-project-name> ./helm-chart -f helm-chart/values.yaml --namespace <your-namespace> --set storageClassName=longhorn --set registry.password=${HARBOR_RW_PASSWORD} --set registry.username=${HARBOR_RW_USER} --set registry.registry=${HARBOR_HOST} --set commitHash=${CI_COMMIT_SHA} 
+  only: 
+    - main 
+  tags: 
+    - shared 
+  environment: 
+    name: dev 

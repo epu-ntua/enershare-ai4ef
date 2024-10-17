@@ -1,0 +1,17 @@
+# This file defines the Kubernetes Service to expose the application internally and provide stable networking within the cluster. 
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: "{{ .Release.Name }}-{{ .Values.app.service.name }}" 
+  labels: 
+    release: {{ .Release.Name }} 
+spec: 
+  type: ClusterIP 
+  ports: 
+    - name: http 
+      port: 80 
+      protocol: TCP 
+      targetPort: <your-internal-exposed-port> 
+  selector: 
+    app: {{ .Values.app.service.name }} 
+    release: {{ .Release.Name }} 

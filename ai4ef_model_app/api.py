@@ -267,7 +267,7 @@ async def get_building_parameters_service_2(parameters: dict ={"average_monthly_
 
     # Convert the keys to title case
     api_output = {convert_to_title(key): value for key, value in api_output.items()}
-    # print(prediction)
+    api_output = {key.replace("Co2", "CO2"): value for key, value in api_output.items()}
 
     # Round all values to two digits
     api_output = {key: round(value, 2) for key, value in api_output.items()}

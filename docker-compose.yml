@@ -1,4 +1,3 @@
-version: '3'
 services:
   ai4ef-model-app:
     container_name: ai4ef-model-app
@@ -40,39 +39,36 @@ services:
       - CONSUMER_AGENT_ID=urn:ids:enershare:connectors:NTUA:Consumer:ConsumerAgent
       - PROVIDER_AGENT_ID=urn:ids:enershare:connectors:NTUA:Provider:Pilot7
 
-  server:
-    container_name: leif-postgrest-service
-    image: postgrest/postgrest
-    restart: always
-    ports:
-      - "${POSTGREST_PORT}:3000"
-    environment:
-      PGRST_DB_URI: ${PGRST_DB_URI}
-      PGRST_DB_SCHEMA: ${PGRST_DB_SCHEMA}
-      PGRST_DB_ANON_ROLE: ${PGRST_DB_ANON_ROLE}
-      PGRST_SERVER_PROXY_URI: ${PGRST_SERVER_PROXY_URI}
-      PGRST_OPENAPI_SERVER_PROXY_URI: ${PGRST_OPENAPI_SERVER_PROXY_URI}
-    networks:
-      - my_network
-      - nginx-proxy-manager_enershare_network
+  # server:
+  #   container_name: leif-postgrest-service
+  #   image: postgrest/postgrest
+  #   restart: always
+  #   ports:
+  #     - "${POSTGREST_PORT}:3000"
+  #   environment:
+  #     PGRST_DB_URI: ${PGRST_DB_URI}
+  #     PGRST_DB_SCHEMA: ${PGRST_DB_SCHEMA}
+  #     PGRST_DB_ANON_ROLE: ${PGRST_DB_ANON_ROLE}
+  #     PGRST_SERVER_PROXY_URI: ${PGRST_SERVER_PROXY_URI}
+  #     PGRST_OPENAPI_SERVER_PROXY_URI: ${PGRST_OPENAPI_SERVER_PROXY_URI}
+  #   networks:
+  #     - nginx-proxy-manager_enershare_network
 
-  swagger:
-    container_name: leif-postgrest-swagger-service
-    image: swaggerapi/swagger-ui:latest
-    restart: always
-    ports:
-        - "${SWAGGER_PORT}:8080"
-    expose:
-        - "8080"
-    volumes:
-      - ./postgrest-openapi-ro.yaml:/usr/share/nginx/html/postgrest-openapi-ro.yaml:ro # ro = readOnly
-    environment:
-        API_URL: ./postgrest-openapi-ro.yaml
-    networks:
-      - nginx-proxy-manager_enershare_network
+  # swagger:
+  #   container_name: leif-postgrest-swagger-service
+  #   image: swaggerapi/swagger-ui:latest
+  #   restart: always
+  #   ports:
+  #       - "${SWAGGER_PORT}:8080"
+  #   expose:
+  #       - "8080"
+  #   volumes:
+  #     - ./postgrest-openapi-ro.yaml:/usr/share/nginx/html/postgrest-openapi-ro.yaml:ro # ro = readOnly
+  #   environment:
+  #       API_URL: ./postgrest-openapi-ro.yaml
+  #   networks:
+  #     - nginx-proxy-manager_enershare_network
 
 networks:
-  my_network:
-    driver: bridge
   nginx-proxy-manager_enershare_network:
     external: true

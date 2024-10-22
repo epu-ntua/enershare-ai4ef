@@ -113,20 +113,23 @@ To begin using the Training Playground:
 
 The parameters defined in launchpad are the following:
 
-|   Parameters   | Type |        Default Value                        |                           Description                           |
-|:--------------:|:----:|:-------------------------------------------:|:---------------------------------------------------------------:|
-| input_filepath |  str |    'EF_comp.csv' / './Sol_pan_comp.csv'     |        Folder path containing csv files used by the model       |
-|      seed      |  str |            '42'                             |            seed used to set random state to the model           |
-|    n_trials    |  int |             '2'                             |        number of trials - different tuning oh hyperparams       |
-|   max_epochs   |  str |             '3'                             |           range of number of epochs used by the model           |
-|    n_layers    |  str |             '1'                             |           range of number of layers used by the model           |
-|   layer_sizes  |  str |            "100"                            |          range of size of each layer used by the model          |
-|   activation   |  str |           'ReLU'                            |        activation functions experimented on by the model        |
-| optimizer_name |  str |           'Adam'                            |             optimizers experimented on by the model             |
-|   batch_size   |  str |           '1024'                            |             batch sizes experimented on by the model            |
-|   n_trials     |  int |             50                              |                       number of trials for HPO                  |
-|   num_workers  |  str |             '2'                             |       accelerator (cpu/gpu) processesors and threads used       |
-|   preprocess   |  int |             '1'                             |       boolean if data require preprocessing and scaling         |
-|   feature_cols |  str |              -                              |       Dataset columns necesary for training                     |
-|   target_cols  |  str |              -                              |       Target column that we want to predict (model output)      |
-|   output_dir   |  str |      './models-scalers/'                    |            local directory path to store models/scalers         |
+|   Parameters         | Type |        Default Value                        |                           Description                           |
+|:--------------------:|:----:|:-------------------------------------------:|:---------------------------------------------------------------:|
+| input_filepath       |  str |    'EF_comp.csv' / './Sol_pan_comp.csv'     |        Folder path containing csv files used by the model       |
+| authorization        |  str |    APIKEY-XXXXXXXXXXXXXXXXXXXXXXXXXXXXX     |        Bearer token of your personal dataspace connector        |
+| provider_agent_id    |  str |    urn:ids:enershare:org:prov_conn:ageent   |        Provider connector agent that hosts these data           |
+| consumer_agent_id    |  str |    urn:ids:enershare:org:con_conn:ageent    |        Consumer connector agent that requests these data        |
+|      seed            |  str |            '42'                             |            seed used to set random state to the model           |
+|    n_trials          |  int |             '2'                             |        number of trials - different tuning oh hyperparams       |
+|   max_epochs         |  str |             '3'                             |           range of number of epochs used by the model           |
+|    n_layers          |  str |             '1'                             |           range of number of layers used by the model           |
+|   layer_sizes        |  str |            "100"                            |          range of size of each layer used by the model          |
+|   activation         |  str |           'ReLU'                            |        activation functions experimented on by the model        |
+| optimizer_name       |  str |           'Adam'                            |             optimizers experimented on by the model             |
+|   batch_size         |  str |           '1024'                            |             batch sizes experimented on by the model            |
+|   n_trials           |  int |             50                              |                       number of trials for HPO                  |
+|   num_workers        |  str |             '2'                             |       accelerator (cpu/gpu) processesors and threads used       |
+|   preprocess         |  int |             '1'                             |       boolean if data require preprocessing and scaling         |
+|   feature_cols       |  str |              -                              |       Dataset columns necesary for training                     |
+|   target_cols        |  str |              -                              |       Target column that we want to predict (model output)      |
+|   output_dir         |  str |      './models-scalers/'                    |            local directory path to store models/scalers         |

@@ -1,0 +1,9 @@
+# This file defines the Kubernetes ConfigMap. A ConfigMap holds configuration data that your application can consume at runtime 
+kind: ConfigMap 
+apiVersion: v1 
+metadata: 
+  name: {{ .Release.Name }}-{{ .Values.app.service.name }}-cm 
+  labels: 
+    release: {{ .Release.Name }} 
+data: 
+  APP_BACKEND_URL: "{{ .Values.app.env.APP_BACKEND_URL }}" 

@@ -12,6 +12,7 @@ services:
       - "${MODEL_APP_PORT}"
     volumes:
       - shared-storage:/leif_app/shared_storage/  # Use a named volume for shared access
+      - ./data_mount:/leif_app/data_mount/  # Bind mount for additional folder
     networks:
       - nginx-proxy-manager_enershare_network
     environment:
@@ -31,6 +32,7 @@ services:
       - "${TRAIN_APP_PORT}"
     volumes:
       - shared-storage:/leif_app/shared_storage/  # Use a named volume for shared access
+      - ./data_mount:/leif_app/data_mount/  # Bind mount for additional folder
     ports:
       - "${TRAIN_APP_PORT}:${TRAIN_APP_PORT}"
     networks:

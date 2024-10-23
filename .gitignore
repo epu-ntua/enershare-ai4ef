@@ -13,6 +13,7 @@
 /postgrest-openapi-ro.yaml
 /Makefile
 **/backup/
+**/data_mount
 /appstore-docker-compose.yml
 Dockerfile.train-app
 Dockerfile.model-app

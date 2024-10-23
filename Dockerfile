@@ -10,7 +10,6 @@ COPY ./ai4ef_train_app /leif_app/ai4ef_train_app
 COPY ./ai4ef_model_app /leif_app/ai4ef_model_app/
 COPY ./shared_storage/ /leif_app/shared_storage/
 
-
 # Install build-essential and other necessary system dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

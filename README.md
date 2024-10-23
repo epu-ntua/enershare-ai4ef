@@ -1,4 +1,4 @@
-# Enershare AI4EF
+![AI4EF-Logo](./docs/figures/color%20all.png)
 
 The repository for AI4F services for updating building energy class and forecasting effect of potential benefit at installing solar panels.
 

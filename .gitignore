@@ -1,7 +1,7 @@
 /datasets/
 /json_files/
 /misc/
-/shared_storage/
+**/shared_storage/datasets/
 **/__pycache__/
 **/lightning_logs/
 **/.env

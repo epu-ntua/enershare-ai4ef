@@ -11,7 +11,7 @@ services:
     expose:
       - "${MODEL_APP_PORT}"
     volumes:
-      - ./:/leif_app/code # local dir is translated to leif_app/code in image file system
+      - shared-storage:/leif_app/shared_storage/  # Use a named volume for shared access
     networks:
       - nginx-proxy-manager_enershare_network
     environment:
@@ -29,16 +29,21 @@ services:
     command: ["dagster", "dev", "-h", "0.0.0.0", "-p", "${TRAIN_APP_PORT}"]
     expose:
       - "${TRAIN_APP_PORT}"
+    volumes:
+      - shared-storage:/leif_app/shared_storage/  # Use a named volume for shared access
     ports:
       - "${TRAIN_APP_PORT}:${TRAIN_APP_PORT}"
     networks:
       - nginx-proxy-manager_enershare_network
     environment:
       - SHARED_STORAGE_PATH=shared_storage/
-      - API_KEY=APIKEY-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-      - CONSUMER_AGENT_ID=urn:ids:enershare:connectors:org:consumer_conn:agent_name
-      - PROVIDER_AGENT_ID=urn:ids:enershare:connectors:org:provider_conn:agent_name
+      - API_KEY=APIKEY-8fb34046139a60d2de235862428f38dd281cb83580b873be6d57cd48bf2add37
+      - CONSUMER_AGENT_ID=urn:ids:enershare:connectors:NTUA:Consumer:ConsumerAgent
+      - PROVIDER_AGENT_ID=urn:ids:enershare:connectors:NTUA:Provider:Pilot7
 
 networks:
   nginx-proxy-manager_enershare_network:
     external: true
+
+volumes:
+  shared-storage: # Define the shared volume

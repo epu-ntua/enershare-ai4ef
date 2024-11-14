@@ -26,7 +26,7 @@ class TrainConfig(ConfigurableResource):
     num_workers: int = 2
     n_trials: int = 3
     preprocess: int = 1
-    feature_cols: str = "Building total area,Reference area,Above ground floors,Underground floor,Initial energy class,Energy consumption before,Energy class after"
+    feature_cols: str = "Building total area,Above ground floors,Initial energy class,Energy consumption before,Energy class after"#,Reference area,Underground floor
     target_cols: str = "Carrying out construction works,Reconstruction of engineering systems,Heat installation,Water heating system"
     predict: int = 0
     ml_path: str = f"{parent_dir}/models-scalers/best_MLPClassifier.ckpt"

@@ -275,9 +275,18 @@ def service_1_model_predict(test_X, service_1_targets, model_path, scalers_path)
 
     test_X = pd.DataFrame.from_dict(test_X)
 
+    print(test_X.dtypes)
+
     test_X = data_scaling(test_X, scalers['X_categorical_scalers'], scalers['X_continuous_scalers'])
 
+    print(test_X.dtypes)
+    print(test_X.head())
+
+    # Ensure that the dataframe is numeric before passing to torch tensor
+    test_X = test_X.apply(pd.to_numeric, errors='coerce')
+
     test_X_tensor = torch.tensor(test_X[:10].values, dtype=torch.float32)
+
 
     pred_Y = model(test_X_tensor).round().tolist()
     print(pred_Y)

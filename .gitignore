@@ -17,3 +17,4 @@
 /appstore-docker-compose.yml
 Dockerfile.train-app
 Dockerfile.model-app
+Dockerfile.unified

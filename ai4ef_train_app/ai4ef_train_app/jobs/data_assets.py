@@ -207,6 +207,8 @@ def data_preprocessing(context, initial_data: pd.DataFrame):
 
     scalers = {}
 
+    print(initial_data.info())
+
     categorical_cols = [col for col in initial_data.columns if initial_data[col].isin([0, 1]).all() or initial_data[col].apply(lambda x: isinstance(x, str)).all()]
     continuous_fields = [col for col in initial_data.columns if col not in categorical_cols]
 

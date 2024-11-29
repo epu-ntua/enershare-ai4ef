@@ -20,7 +20,8 @@ The project also includes:
 docker compose build
 docker compose up -d
 ```
-After installation is complete, the AI4EF MLApp must be visible at `localhost:8888` and the AI4EF Training Playground app UI must be visible in `localhost:8890`
+After installation is complete, you should see the official AI4EF dashboard located at `localhost:3000`, the AI4EF MLApp must be visible at `localhost:8888` and the AI4EF Training Playground app UI must be visible in `localhost:8890`.
+The code for the frontend is provided on a seperate repo at: [https://github.com/epu-ntua/enershare-ai4ef-frontend](https://github.com/epu-ntua/enershare-ai4ef-frontend) 
 
 ## Data format
 

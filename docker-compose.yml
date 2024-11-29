@@ -1,4 +1,12 @@
 services:
+  ai4ef-dashboard:
+    image: korbakis/enershare-leif-uc:no-auth
+    ports:
+      - "8002:3000"
+    networks:
+      - nginx-proxy-manager_enershare_network
+    restart: always
+    
   ai4ef-model-app:
     container_name: ai4ef-model-app
     restart: always

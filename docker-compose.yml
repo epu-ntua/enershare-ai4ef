@@ -2,7 +2,7 @@ services:
   ai4ef-dashboard:
     image: korbakis/enershare-leif-uc:no-auth
     ports:
-      - "8002:3000"
+      - "3000:3000"
     networks:
       - nginx-proxy-manager_enershare_network
     restart: always
@@ -14,10 +14,10 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "${MODEL_APP_PORT}:${MODEL_APP_PORT}"
-    command: ["uvicorn", "ai4ef_model_app.api:app", "--host", "0.0.0.0", "--port", "${MODEL_APP_PORT}"]
+      - "8888:8888"
+    command: ["uvicorn", "ai4ef_model_app.api:app", "--host", "0.0.0.0", "--port", "8888"]
     expose:
-      - "${MODEL_APP_PORT}"
+      - "8888"
     volumes:
       - shared-storage:/leif_app/shared_storage/  # Use a named volume for shared access
       - ./data_mount:/leif_app/data_mount/  # Bind mount for additional folder
@@ -35,14 +35,14 @@ services:
       context: .
       dockerfile: Dockerfile
     working_dir: /leif_app/ai4ef_train_app
-    command: ["dagster", "dev", "-h", "0.0.0.0", "-p", "${TRAIN_APP_PORT}"]
+    command: ["dagster", "dev", "-h", "0.0.0.0", "-p", "8890"]
     expose:
-      - "${TRAIN_APP_PORT}"
+      - "8890"
     volumes:
       - shared-storage:/leif_app/shared_storage/  # Use a named volume for shared access
       - ./data_mount:/leif_app/data_mount/  # Bind mount for additional folder
     ports:
-      - "${TRAIN_APP_PORT}:${TRAIN_APP_PORT}"
+      - "8890:8890"
     networks:
       - nginx-proxy-manager_enershare_network
     environment:

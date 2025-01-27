@@ -1,5 +1,7 @@
-![AI4EF-Logo](./docs/figures/color%20all.png)
+[![AI4EF-Logo](./docs/figures/color%20all.png)
+](https://raw.githubusercontent.com/epu-ntua/enershare-ai4ef/main/docs/figures/color%20logo.png)
 
+#
 [![DOI](https://zenodo.org/badge/733031403.svg)](https://doi.org/10.5281/zenodo.12205373)
 
 The repository for AI4F services for updating building energy class and forecasting effect of potential benefit at installing solar panels.
